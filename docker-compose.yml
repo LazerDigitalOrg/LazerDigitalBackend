@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: db
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lazerdigital
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data_db:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+
+
+volumes:
+  postgres_data_db: {}
+  pgadmin_data: {}
