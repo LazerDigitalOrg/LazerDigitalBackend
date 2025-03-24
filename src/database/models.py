@@ -126,7 +126,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 
 async def create_tables(engine: AsyncEngine):
-    # Импортируем модели, чтобы они зарегистривались в Base.metadata
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 import asyncio

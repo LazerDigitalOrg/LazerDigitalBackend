@@ -2,7 +2,6 @@ from sqlalchemy import select, desc, asc
 
 from database.models import Equipment, Category
 
-
 class EquipmentRepository:
     def __init__(self, session):
         self.session = session

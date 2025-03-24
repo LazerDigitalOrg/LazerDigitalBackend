@@ -4,12 +4,13 @@ services:
   db:
     container_name: db
     image: postgres:14
+
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=lazerdigital
     ports:
-      - 5432:5432
+      - 5433:5432
     volumes:
       - postgres_data_db:/var/lib/postgresql/data
     restart: unless-stopped

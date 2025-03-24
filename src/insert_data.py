@@ -8,7 +8,6 @@ from src.dependencies import get_async_session
 async def generate_date():
     session = async_session()
     try:
-        # Создаем категории
         categories = [
             Category(title="Приборы полного вращения",
                      category_slug="0-moving-heads",
