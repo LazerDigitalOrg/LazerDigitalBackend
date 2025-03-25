@@ -39,12 +39,8 @@ class EquipmentService:
         print(equipment.title)
         return EquipmentSchema(
             title=equipment.title,
-            power=equipment.power,
-            total_power=equipment.total_power,
-            producer=equipment.producer,
             description=equipment.description,
             characteristics=equipment.characteristics,
-            weight=equipment.weight,
             photo_url=equipment.photo_url,
         )
 

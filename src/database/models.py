@@ -9,10 +9,10 @@ class Base(DeclarativeBase):
     __abstract__ = True
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
+
 class Role(Base):
     __tablename__ = "roles"
     title: Mapped[str] = mapped_column(String)
-
 
 
 class User(Base):
@@ -26,6 +26,8 @@ class User(Base):
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
 
     person_position: Mapped[str] = mapped_column(String, nullable=True)
+
+
 class Reviews(Base):
     __tablename__ = "reviews"
     review_title: Mapped[str] = mapped_column(String)
@@ -47,7 +49,7 @@ class Events(Base):
 class Category(Base):
     __tablename__ = "categories"
     title: Mapped[str] = mapped_column(String)
-    category_slug: Mapped[str] = mapped_column(String,unique=True,nullable=True)
+    category_slug: Mapped[str] = mapped_column(String, unique=True, nullable=True)
     hint: Mapped[str] = mapped_column(Text)
     photo_url: Mapped[str] = mapped_column(String, nullable=True)
     description: Mapped[str] = mapped_column(Text)
@@ -128,6 +130,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 async def create_tables(engine: AsyncEngine):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-import asyncio
-asyncio.run(create_tables(async_engine))
 
+
+import asyncio
+
+asyncio.run(create_tables(async_engine))
