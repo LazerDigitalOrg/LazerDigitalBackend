@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import String, DateTime, Text, func, ForeignKey, Integer, JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from src.database.database import async_engine
@@ -52,7 +54,10 @@ class Category(Base):
     category_slug: Mapped[str] = mapped_column(String, unique=True, nullable=True)
     hint: Mapped[str] = mapped_column(Text)
     photo_url: Mapped[str] = mapped_column(String, nullable=True)
-    description: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=True)
+    # parent: Mapped["Category"] = relationship("Category", remote_side='id', back_populates="children")
+    # children: Mapped[List["Category"]] = relationship("Category", back_populates="parent")
 
 
 class Brand(Base):
@@ -64,15 +69,15 @@ class Brand(Base):
 class Equipment(Base):
     __tablename__ = "equipments"
     title: Mapped[str] = mapped_column(String)
-    rental_price: Mapped[int] = mapped_column(Integer)
-    brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"))
+    rental_price: Mapped[int] = mapped_column(Integer, nullable=True)
+    brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"),nullable=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     category_slug: Mapped[str] = mapped_column(String)
     equipment_slug: Mapped[str] = mapped_column(String, nullable=True, unique=True)
     power: Mapped[int] = mapped_column(String, nullable=True)
     total_power: Mapped[int] = mapped_column(String, nullable=True)
-    producer: Mapped[str] = mapped_column(String)
-    characteristics: Mapped[dict] = mapped_column(JSON)
+    producer: Mapped[str] = mapped_column(String, nullable=True)
+    characteristics: Mapped[dict] = mapped_column(JSON, nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     weight: Mapped[int] = mapped_column(Integer)
     available_quantity: Mapped[int] = mapped_column(Integer)
