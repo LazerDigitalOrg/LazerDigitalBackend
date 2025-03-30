@@ -1,8 +1,9 @@
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Union
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from fastapi.exceptions import HTTPException
+from fastapi import status
 from src.equipments.schemas import EquipmentSchema, CategorySchema, CategoryResponse, EquipmentResponse
 from src.equipments.services import EquipmentService, CategoryService
 from dependencies import get_async_session
@@ -10,25 +11,43 @@ from dependencies import get_async_session
 equipments_router = APIRouter(prefix="/store", tags=["store"])
 
 
-@equipments_router.get("/{category_slug}/{equipment_slug}", response_model=EquipmentSchema)
-async def get_equipment_by_equipment_slu(
+@equipments_router.get("/{category_slug}/{path:path}", response_model=Optional[Union[EquipmentResponse, EquipmentSchema]])
+async def get_equipment_or_equipments(
         session: Annotated[AsyncSession, Depends(get_async_session)],
-        category_slug:str,
-        equipment_slug:str
+        category_slug,
+        path: str,
+        limit: int | None = 1,
+        page: int | None = 10,
 ):
     equipment_service = EquipmentService(session)
-    return await equipment_service.get_single_equipment(equipment_slug)
+    category_service = CategoryService(session)
+
+    path = path.split("/")
+
+    if len(path) == 2:
+        return await equipment_service.get_single_equipment(path[1],category_slug+"/"+path[0])
+    if len(path) == 1:
+        if await category_service.is_category(path[0]):
+            print(category_slug+"/"+path[0])
+            equipments = await equipment_service.get_equipments_by_category(limit, page,category_slug+"/"+path[0])
+            return equipments
+        else:
+            return await equipment_service.get_single_equipment(path[0],category_slug)
 
 
-@equipments_router.get("/{category_slug}", response_model=EquipmentResponse)
-async def get_equipments_by_catgory(
+@equipments_router.get("/{category_slug}", response_model=Union[EquipmentResponse, CategoryResponse])
+async def get_equipments_or_categories(
         session: Annotated[AsyncSession, Depends(get_async_session)],
         category_slug: str,
-        limit: int = 10,
-        page: int = 1,
+        limit: int | None = 10,
+        page: int | None = 1,
 ):
+    category_service = CategoryService(session)
     equipment_service = EquipmentService(session)
-    return await equipment_service.get_equipments_by_category(limit, page, category_slug)
+    result = await category_service.get_child_categories(category_slug)
+    if result is None:
+        return await equipment_service.get_equipments_by_category(limit, page, category_slug)
+    return result
 
 
 @equipments_router.get("", response_model=CategoryResponse)

@@ -48,42 +48,42 @@ async def generate_date():
         ]
         session.add_all(categories)
         await session.flush()
-        subcategories = [
+        nested_categories = [
             Category(title="Фермы",
-                     category_slug=categories[5].category_slug + "/6-farm",
-                     category_id=categories[5].id,
+                     category_slug="6-farm",
+                     parent_category_slug=categories[5].category_slug,
                      hint="Различные модели Различные длины и радиусы",
                      photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340/cat6_2.png",
                      ),
 
             Category(title="Управляемые лебедки",
-                     category_slug=categories[5].category_slug + "/7-chain-control",
-                     category_id=categories[5].id,
+                     category_slug="7-chain-control",
+                     parent_category_slug=categories[5].category_slug,
                      hint="Chain Master Vario Компьютерное управление",
                      photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340/02_26.png",
                      ),
             Category(title="Лебёдки",
-                     category_slug=categories[5].category_slug + "/8-chain-master",
-                     category_id=categories[5].id,
+                     category_slug="8-chain-master",
+                     parent_category_slug=categories[5].category_slug,
                      hint="Длина цепи: 16м, 24м 250кг, 350кг, 500кг, 1000кг",
                      photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340/02_27.png"),
             Category(title="Генераторы дыма",
-                     category_slug=categories[5].category_slug + "/9-fog-machine",
-                     category_id=categories[5].id,
+                     category_slug="9-fog-machine",
+                     parent_category_slug=categories[5].category_slug,
                      hint="MDG, HES, Martin",
                      photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340/02_28.png"),
             Category(title="Зеракльные шары",
-                     category_slug=categories[5].category_slug + "/10-dicsoball",
-                     category_id=categories[5].id,
+                     category_slug="10-dicsoball",
+                     parent_category_slug=categories[5].category_slug,
                      hint="Подвесные Крутящиеся",
                      photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340/02_29.png"),
             Category(title="Штативы",
-                     category_slug=categories[5].category_slug + "/11-tripod",
-                     category_id=categories[5].id,
+                     category_slug="11-tripod",
+                     parent_category_slug=categories[5].category_slug,
                      hint="Нагрузка до 35 кг Нагрузка до 80 кг",
                      photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340/02_30.png"),
         ]
-        session.add_all(subcategories)
+        session.add_all(nested_categories)
         await session.flush()
         brands = [
             Brand(title="AXCOR", description="Производитель светового оборудования"),
@@ -933,10 +933,10 @@ async def generate_date():
             Equipment(
                 title="Фермы и соединительные элементы",
                 rental_price=0,
-                category_id=subcategories[0].id,
+                category_id=nested_categories[0].id,
                 equipment_slug="fermy-i-soedinitelnye-elementy",
-                category_slug=subcategories[0].category_slug,
-                characteristics={"chars": ["Различные модели", "Различные длины и радиусы"]},
+                category_slug=nested_categories[0].parent_category_slug+"/"+nested_categories[0].category_slug,
+                characteristics={"Технические характеристики": ["Различные модели", "Различные длины и радиусы"]},
                 weight=0,
                 available_quantity=12,
                 photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340/01_21.jpg",
@@ -944,11 +944,11 @@ async def generate_date():
             ),
             Equipment(
                 title="Управляемые лебёдки",
-                category_id=subcategories[1].id,
+                category_id=nested_categories[1].id,
                 equipment_slug="upravlyaemye-lebedki-chain-master-vario",
                 rental_price=0,
-                category_slug=subcategories[1].category_slug,
-                characteristics={"chars": ["Компьютерное управление"]},
+                category_slug=nested_categories[1].parent_category_slug+"/"+nested_categories[1].category_slug,
+                characteristics={"Технические характеристики": ["Компьютерное управление"]},
                 weight=0,
                 available_quantity=12,
                 photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340_cropped/02_26.png",
@@ -957,11 +957,11 @@ async def generate_date():
             Equipment(
                 title="Лебёдки Chain Master",
                 rental_price=0,
-                category_id=subcategories[2].id,
+                category_id=nested_categories[2].id,
 
                 equipment_slug="lebedki-chain-master",
-                category_slug=subcategories[2].category_slug,
-                characteristics={"Длина цепи": "16м, 24м, 250кг, 350кг, 500кг, 1000кг"},
+                category_slug=nested_categories[1].parent_category_slug+"/"+nested_categories[1].category_slug,
+                characteristics={"Технические характеристики":["Длина цепи: 16м, 24м, 250кг, 350кг, 500кг, 1000кг"]},
                 weight=0,
                 available_quantity=12,
                 photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340_cropped/02_27.png",
@@ -971,10 +971,10 @@ async def generate_date():
                 title="Генераторы дыма",
                 equipment_slug="gerenatory-dyma",
                 rental_price=0,
-                category_id=subcategories[3].id,
+                category_id=nested_categories[3].id,
 
-                category_slug=subcategories[3].category_slug,
-                characteristics={"chars": ["MDG, HES", "Martin"]},
+                category_slug=nested_categories[3].parent_category_slug+ "/"+nested_categories[3].category_slug,
+                characteristics={"Технические характеристики": ["MDG, HES", "Martin"]},
                 weight=0,
                 available_quantity=12,
                 photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340_cropped/02_28.png",
@@ -984,10 +984,10 @@ async def generate_date():
                 title="Зеркальные шары",
                 equipment_slug="zerkalnye-shary",
                 rental_price=0,
-                category_id=subcategories[4].id,
+                category_id=nested_categories[4].id,
 
-                category_slug=subcategories[4].category_slug,
-                characteristics={"chars": ["Подвесные", "Крутящиеся"]},
+                category_slug=nested_categories[4].parent_category_slug+"/"+nested_categories[4].category_slug,
+                characteristics={"Технические характеристики": ["Подвесные", "Крутящиеся"]},
                 weight=0,
                 available_quantity=12,
                 photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340_cropped/02_29.png",
@@ -996,11 +996,11 @@ async def generate_date():
             Equipment(
                 title="Штативы",
                 equipment_slug="shtativy",
-                category_id=subcategories[5].id,
+                category_id=nested_categories[5].id,
 
                 rental_price=0,
-                category_slug=subcategories[5].category_slug,
-                characteristics={"chars": ["Нагрузка до 35 кг", "Нагрузка до 60 кг"]},
+                category_slug=nested_categories[5].parent_category_slug+"/"+nested_categories[5].category_slug,
+                characteristics={"Технические характеристики": ["Нагрузка до 35 кг", "Нагрузка до 60 кг"]},
                 weight=0,
                 available_quantity=12,
                 photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340_cropped/02_30.png",
@@ -1013,7 +1013,11 @@ async def generate_date():
         await session.flush()
 
         for equipment in equipments:
-            equipment.equipment_slug = f"{equipment.id}-{equipment.title.lower().replace(' ', '-')}"
+            if equipment.equipment_slug is None:
+                equipment.equipment_slug = f"{equipment.id}-{equipment.title.lower().replace(' ', '-')}"
+            else:
+                equipment.equipment_slug = f"{equipment.id}-{equipment.equipment_slug}"
+
 
         roles = [
             Role(
