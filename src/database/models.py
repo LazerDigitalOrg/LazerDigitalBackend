@@ -1,9 +1,18 @@
+from enum import Enum
 from typing import List
 
-from sqlalchemy import String, DateTime, Text, func, ForeignKey, Integer, JSON
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import (
+    String,
+    DateTime,
+    Text,
+    func,
+    ForeignKey,
+    Integer,
+    JSON,
+    LargeBinary,
+    Enum as SQLAlchemyEnum, Float, Boolean
+)
 from src.database.database import async_engine
-from sqlalchemy import String, DateTime, Text, func, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -12,23 +21,79 @@ class Base(DeclarativeBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
 
+class RoleEnum(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
+    MANAGER = "manager"
+
+
+class EventTypeEnum(str, Enum):
+    WEDDING = "свадьба"
+    CORPORATIVE = "корпоратив"
+    CONCERT = "концерт"
+    BIRTHDAY = "день рождения"
+
+
+class EventStatusEnum(str, Enum):
+    ACTIVE = "active"
+    ARCHIVE = "archive"
+
+
+class PaymentMethod(str, Enum):
+    EP = "ип"
+    LLL = "ооо"
+    INDIVIDUAL = "физ. лицо"
+
+
+class RefreshToken(Base):
+    __tablename__ = "refreshtoken"
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
+    expired_id: Mapped[DateTime] = mapped_column(DateTime)
+    refresh_token: Mapped[str] = mapped_column(String)
+    isValid: Mapped[bool] = mapped_column(Boolean)
+
+
+class Events(Base):
+    __tablename__ = "events"
+    created_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
+    event_date: Mapped[DateTime] = mapped_column(DateTime)
+    event_end_date: Mapped[DateTime] = mapped_column(DateTime)
+    type: Mapped[EventTypeEnum] = mapped_column(SQLAlchemyEnum(EventTypeEnum))
+    status: Mapped[EventStatusEnum] = mapped_column(SQLAlchemyEnum(EventStatusEnum))
+    area_plan: Mapped[bytes] = mapped_column(LargeBinary)
+    address: Mapped[str] = mapped_column(String)
+    payment_method: Mapped[PaymentMethod] = mapped_column(SQLAlchemyEnum(PaymentMethod))
+    comment: Mapped[String] = mapped_column(Text)
+    site_area: Mapped[int] = mapped_column(Integer)
+    ceiling_height: Mapped[float] = mapped_column(Float)
+    has_tv: Mapped[bool] = mapped_column(Boolean)
+    min_install_time: Mapped[int] = mapped_column(Integer)
+    total_power: Mapped[int] = mapped_column(Integer)
+    has_downtime: Mapped[bool] = mapped_column(Boolean)
+    estimate: Mapped[int] = mapped_column(Integer,nullable=True)
+    discount :  Mapped[float] = mapped_column(Float, nullable=True)
+    customer_id: Mapped[int] = mapped_column(Integer,ForeignKey("users.id"),nullable=True)
+    customer: Mapped["User"] = relationship(back_populates="events",foreign_keys=[customer_id])
+    manager_id :Mapped[int] = mapped_column(Integer,ForeignKey("users.id"), nullable=True)
+    manager : Mapped["User"]  = relationship(back_populates="managed_events",foreign_keys=[manager_id])
+
 class Role(Base):
     __tablename__ = "roles"
-    title: Mapped[str] = mapped_column(String)
+    title: Mapped[RoleEnum] = mapped_column(SQLAlchemyEnum(RoleEnum), unique=True)
 
 
 class User(Base):
     __tablename__ = "users"
-    user_last_name: Mapped[str] = mapped_column(String)
-    user_first_name: Mapped[str] = mapped_column(String)
-    user_middle_name: Mapped[str] = mapped_column(String, nullable=True)
-    user_phone_number: Mapped[str] = mapped_column(String(12))
+    username: Mapped[str] = mapped_column(String)
+    phone_number: Mapped[str] = mapped_column(String(12))
     avatar_url: Mapped[str] = mapped_column(String, nullable=True)
-    user_email_address: Mapped[str] = mapped_column(String, unique=True)
-    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
-
+    hashed_password: Mapped[str] = mapped_column(String)
+    email: Mapped[str] = mapped_column(String, unique=True)
+    role: Mapped[RoleEnum] = mapped_column(ForeignKey("roles.title"), nullable=False)
     person_position: Mapped[str] = mapped_column(String, nullable=True)
-
+    events: Mapped[List["Events"]] = relationship(back_populates="customer",foreign_keys="[Events.customer_id]")
+    managed_events : Mapped[List["Events"]] = relationship( back_populates="manager",foreign_keys="[Events.manager_id]")
 
 class Reviews(Base):
     __tablename__ = "reviews"
@@ -36,17 +101,6 @@ class Reviews(Base):
     review_description: Mapped[str] = mapped_column(Text)
     created_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
     customer_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-
-
-class Events(Base):
-    __tablename__ = "events"
-    status: Mapped[str] = mapped_column(String)
-    total_power: Mapped[int] = mapped_column(Integer)
-    total_sum: Mapped[int] = mapped_column(Integer)
-    description: Mapped[str] = mapped_column(Text)
-    event_date: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
-    customer_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-
 
 class Category(Base):
     __tablename__ = "categories"
@@ -56,8 +110,6 @@ class Category(Base):
     photo_url: Mapped[str] = mapped_column(String, nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     parent_category_slug: Mapped[str] = mapped_column(ForeignKey("categories.category_slug"), nullable=True)
-    # parent: Mapped["Category"] = relationship("Category", remote_side='id', back_populates="children")
-    # children: Mapped[List["Category"]] = relationship("Category", back_populates="parent")
 
 
 class Brand(Base):
@@ -70,7 +122,7 @@ class Equipment(Base):
     __tablename__ = "equipments"
     title: Mapped[str] = mapped_column(String)
     rental_price: Mapped[int] = mapped_column(Integer, nullable=True)
-    brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"),nullable=True)
+    brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"), nullable=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     category_slug: Mapped[str] = mapped_column(String)
     equipment_slug: Mapped[str] = mapped_column(String, nullable=True, unique=True)
@@ -137,6 +189,7 @@ async def create_tables(engine: AsyncEngine):
         await conn.run_sync(Base.metadata.create_all)
 
 
-import asyncio
+if __name__ == "__main__":
+    import asyncio
 
-asyncio.run(create_tables(async_engine))
+    asyncio.run(create_tables(async_engine))

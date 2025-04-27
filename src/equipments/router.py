@@ -8,7 +8,7 @@ from src.equipments.schemas import EquipmentSchema, CategorySchema, CategoryResp
 from src.equipments.services import EquipmentService, CategoryService
 from dependencies import get_async_session
 
-equipments_router = APIRouter(prefix="/store", tags=["store"])
+equipments_router = APIRouter(prefix="/store", tags=["Store"])
 
 
 @equipments_router.get("/{category_slug}/{path:path}", response_model=Optional[Union[EquipmentResponse, EquipmentSchema]])
