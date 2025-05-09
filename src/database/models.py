@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import  StrEnum
 from typing import List
-
+from utils import format_event_dates
 from sqlalchemy import (
     String,
     DateTime,
@@ -10,8 +10,10 @@ from sqlalchemy import (
     Integer,
     JSON,
     LargeBinary,
+
     Enum as SQLAlchemyEnum, Float, Boolean
 )
+
 from src.database.database import async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -21,25 +23,25 @@ class Base(DeclarativeBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
 
-class RoleEnum(str, Enum):
+class RoleEnum(StrEnum):
     ADMIN = "admin"
     USER = "user"
     MANAGER = "manager"
 
 
-class EventTypeEnum(str, Enum):
+class EventTypeEnum(StrEnum):
     WEDDING = "свадьба"
     CORPORATIVE = "корпоратив"
     CONCERT = "концерт"
     BIRTHDAY = "день рождения"
 
 
-class EventStatusEnum(str, Enum):
+class EventStatusEnum(StrEnum):
     ACTIVE = "active"
     ARCHIVE = "archive"
 
 
-class PaymentMethod(str, Enum):
+class PaymentMethod(StrEnum):
     EP = "ип"
     LLL = "ооо"
     INDIVIDUAL = "физ. лицо"
@@ -54,29 +56,39 @@ class RefreshToken(Base):
     isValid: Mapped[bool] = mapped_column(Boolean)
 
 
-class Events(Base):
+class Event(Base):
     __tablename__ = "events"
     created_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
     event_date: Mapped[DateTime] = mapped_column(DateTime)
     event_end_date: Mapped[DateTime] = mapped_column(DateTime)
-    type: Mapped[EventTypeEnum] = mapped_column(SQLAlchemyEnum(EventTypeEnum))
-    status: Mapped[EventStatusEnum] = mapped_column(SQLAlchemyEnum(EventStatusEnum))
-    area_plan: Mapped[bytes] = mapped_column(LargeBinary)
+    title: Mapped[String] = mapped_column(String)
+    type: Mapped[EventTypeEnum] = mapped_column(SQLAlchemyEnum(EventTypeEnum, name='event_type_enum'))
+    status: Mapped[EventStatusEnum] = mapped_column(SQLAlchemyEnum(EventStatusEnum, name='event_status_enum'),
+                                                    default=EventStatusEnum.ACTIVE)
+    area_plan: Mapped[bytes] = mapped_column(LargeBinary, nullable=True)
     address: Mapped[str] = mapped_column(String)
-    payment_method: Mapped[PaymentMethod] = mapped_column(SQLAlchemyEnum(PaymentMethod))
-    comment: Mapped[String] = mapped_column(Text)
-    site_area: Mapped[int] = mapped_column(Integer)
-    ceiling_height: Mapped[float] = mapped_column(Float)
+    payment_method: Mapped[PaymentMethod] = mapped_column(SQLAlchemyEnum(PaymentMethod, name='payment_method_enum'))
+    comment: Mapped[String] = mapped_column(Text, nullable=True)
+    site_area: Mapped[int] = mapped_column(Integer,nullable=True)
+    ceiling_height: Mapped[float] = mapped_column(Float,nullable=True)
     has_tv: Mapped[bool] = mapped_column(Boolean)
     min_install_time: Mapped[int] = mapped_column(Integer)
-    total_power: Mapped[int] = mapped_column(Integer)
+    total_power: Mapped[int] = mapped_column(Integer, nullable=True)
     has_downtime: Mapped[bool] = mapped_column(Boolean)
-    estimate: Mapped[int] = mapped_column(Integer,nullable=True)
-    discount :  Mapped[float] = mapped_column(Float, nullable=True)
-    customer_id: Mapped[int] = mapped_column(Integer,ForeignKey("users.id"),nullable=True)
-    customer: Mapped["User"] = relationship(back_populates="events",foreign_keys=[customer_id])
-    manager_id :Mapped[int] = mapped_column(Integer,ForeignKey("users.id"), nullable=True)
-    manager : Mapped["User"]  = relationship(back_populates="managed_events",foreign_keys=[manager_id])
+    estimate: Mapped[int] = mapped_column(Integer, nullable=True)
+    discount: Mapped[float] = mapped_column(Float, nullable=True)
+    customer_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    customer: Mapped["User"] = relationship(back_populates="events", foreign_keys=[customer_id])
+    manager_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    manager: Mapped["User"] = relationship(back_populates="managed_events", foreign_keys=[manager_id])
+
+    @property
+    def formatted_period(self):
+        return format_event_dates(self.event_date, self.event_end_date)
+
+
+
+# Вывод: 22 – 24 августа 2024 г.
 
 class Role(Base):
     __tablename__ = "roles"
@@ -92,8 +104,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True)
     role: Mapped[RoleEnum] = mapped_column(ForeignKey("roles.title"), nullable=False)
     person_position: Mapped[str] = mapped_column(String, nullable=True)
-    events: Mapped[List["Events"]] = relationship(back_populates="customer",foreign_keys="[Events.customer_id]")
-    managed_events : Mapped[List["Events"]] = relationship( back_populates="manager",foreign_keys="[Events.manager_id]")
+    events: Mapped[List["Event"]] = relationship(back_populates="customer", foreign_keys="[Event.customer_id]")
+    managed_events: Mapped[List["Event"]] = relationship(back_populates="manager", foreign_keys="[Event.manager_id]")
+
 
 class Reviews(Base):
     __tablename__ = "reviews"
@@ -101,6 +114,7 @@ class Reviews(Base):
     review_description: Mapped[str] = mapped_column(Text)
     created_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
     customer_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+
 
 class Category(Base):
     __tablename__ = "categories"

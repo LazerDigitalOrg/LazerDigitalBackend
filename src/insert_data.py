@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from datetime import datetime, timezone
 
 from auth.services import get_password_hash
 from database.models import *
@@ -1057,21 +1057,89 @@ async def generate_date():
 
             users = [
                 User(username="Иван",
-                     hashed_password=get_password_hash("qwerty"),
+                     hashed_password=get_password_hash("user"),
                      phone_number="qwdqd",
                      avatar_url="qwdqwd",
-                     email="user@gmail.com",
+                     email="user@user.com",
                      role="user",
                      person_position='dw'),
                 User(username="admin",
-                     hashed_password=get_password_hash("qwerty"),
+                     hashed_password=get_password_hash("admin"),
                      phone_number="qwdqd",
                      avatar_url="qwdqwd",
-                     email="admin@gmail.com",
+                     email="admin@admin.com",
                      role="admin",
                      person_position='dw'),
             ]
             session.add_all(users)
+            await session.flush()
+
+            events = [
+                Event(
+                    event_date=datetime(2025, 5, 14, 10),
+                    event_end_date=datetime(2025, 5, 15, 22),
+                    type=EventTypeEnum.CONCERT,
+                    status=EventStatusEnum.ACTIVE,
+                    area_plan=b"dummy_binary_data_plan1",
+                    title="Фестиваль ИТ - Пикник в парке Коломенское",
+                    address="Main Street 123, City Center",
+                    payment_method=PaymentMethod.EP,
+                    comment="VIP concert for 500 guests",
+                    site_area=800,
+                    ceiling_height=4.5,
+                    has_tv=True,
+                    min_install_time=120,
+                    total_power=15000,
+                    has_downtime=False,
+                    estimate=10000,
+                    discount=0.15,
+                    customer_id=users[0].id,
+                    manager_id=users[1].id,
+                ),
+                Event(
+                    event_date=datetime(2025, 5, 15, 10),
+                    event_end_date=datetime(2025, 5, 15, 22),
+                    type=EventTypeEnum.BIRTHDAY,
+                    status=EventStatusEnum.ACTIVE,
+                    area_plan=b"dummy_binary_data_plan2",
+                    title="Концерт Леонида Агутина на ВТБ Арене",
+                    address="Tech Park, Building B",
+                    payment_method=PaymentMethod.INDIVIDUAL,
+                    comment="Annual tech conference",
+                    site_area=1200,
+                    ceiling_height=3.2,
+                    has_tv=False,
+                    min_install_time=180,
+                    total_power=25000,
+                    has_downtime=True,
+                    estimate=None,
+                    discount=None,
+                    customer_id=users[0].id,
+                    manager_id=users[1].id,
+                ),
+                Event(
+                    event_date=datetime(2025, 5, 14, 10),
+                    event_end_date=datetime(2025, 5, 15, 22),
+                    type=EventTypeEnum.WEDDING,
+                    status=EventStatusEnum.ARCHIVE,
+                    area_plan=b"dummy_binary_data_plan3",
+                    title="Концерт Звери на ВТБ Арене",
+                    address="Exhibition Hall, Downtown",
+                    payment_method=PaymentMethod.LLL,
+                    comment="Art exhibition opening",
+                    site_area=500,
+                    ceiling_height=2.8,
+                    has_tv=True,
+                    min_install_time=90,
+                    total_power=8000,
+                    has_downtime=False,
+                    estimate=5000,
+                    discount=None,
+                    customer_id=users[0].id,
+                    manager_id=users[1].id,
+                )
+            ]
+            session.add_all(events)
 
     except Exception as e:
         await session.close()
