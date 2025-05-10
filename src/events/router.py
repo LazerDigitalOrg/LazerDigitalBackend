@@ -35,22 +35,21 @@ async def get_all_events(
 
 @events_router.get("/get_active", response_model=ActiveEventsResponse)
 async def get_active_events(
-        user: Annotated[User, Depends(get_admin_user)],
+        user: Annotated[User, Depends(get_current_user)],
         session: AsyncSession = Depends(get_async_session),
 ) -> AllEventsResponse:
     events_service = EventService(session)
-    result = await events_service.get_active_events()
+    result = await events_service.get_active_events(user.id)
     return result
 
 
 @events_router.get("/get_archive", response_model=ArchiveEventsResponse)
 async def get_active_events(
-        user: Annotated[User, Depends(get_admin_user)],
+        user: Annotated[User, Depends(get_current_user)],
         session: AsyncSession = Depends(get_async_session),
 ) -> AllEventsResponse:
     events_service = EventService(session)
-    result = await events_service.get_archive_events()
-
+    result = await events_service.get_archive_events(user.id)
     return result
 
 

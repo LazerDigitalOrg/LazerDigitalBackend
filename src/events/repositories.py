@@ -42,10 +42,10 @@ class EventRepository:
         await self.session.refresh(event)
         return event
 
-    async def get_events_by_condition(self, predicate):
+    async def get_events_by_condition(self, *predicate):
         stmt = (
             select(Event).
-            where(predicate).
+            where(*predicate).
             order_by(Event.created_at.desc())
         )
         result = await self.session.execute(stmt)

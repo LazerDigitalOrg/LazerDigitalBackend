@@ -19,12 +19,14 @@ class AllEventsResponse(BaseModel):
 
 class ActiveEventSchema(BaseModel):
     title: str
+    event_id: int
     date: str
     estimate: float | None
 
 
 class ArchiveEventSchema(BaseModel):
     title: str
+    event_id: int
     date: str
     equipment_count: int | None
     estimate: float | None

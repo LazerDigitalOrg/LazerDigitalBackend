@@ -37,11 +37,15 @@ class EventService:
     async def add_event(self, new_event: CreateEventSchema, user_id: int):
         return await self.event_repository.add(new_event, user_id)
 
-    async def get_active_events(self):
-        events = await self.event_repository.get_events_by_condition(Event.status == EventStatusEnum.ACTIVE)
+    async def get_active_events(self, user_id):
+        events = await self.event_repository.get_events_by_condition(
+            Event.status == EventStatusEnum.ACTIVE,
+            Event.customer_id == user_id
+        )
         events = [
             ActiveEventSchema(
                 title=event.title,
+                event_id=event.id,
                 date=event.formatted_period,
                 estimate=event.estimate
             )
@@ -49,15 +53,22 @@ class EventService:
         ]
         return ActiveEventsResponse(events=events)
 
-    async def get_archive_events(self):
-        events = await self.event_repository.get_events_by_condition(Event.status == EventStatusEnum.ARCHIVE)
+    async def get_archive_events(self, user_id):
+        events = await self.event_repository.get_events_by_condition(
+    Event.status == EventStatusEnum.ARCHIVE,
+            Event.customer_id == user_id
+        )
         events = [
             ArchiveEventSchema(
                 title=event.title,
                 date=event.formatted_period,
+                event_id=event.id,
                 equipment_count=event.equipment_count,
                 estimate=event.estimate
             )
             for event in events
         ]
         return ArchiveEventsResponse(events=events)
+
+    async def get_event(self, event_id):
+        pass
