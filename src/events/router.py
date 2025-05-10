@@ -9,9 +9,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth.helpers import get_admin_user, get_current_user
 from database.models import User
 from dependencies import get_async_session
-from events.schemas import AllEventsSchema, AllEventsResponse, CreateEventSchema, ActiveEventsResponse, \
-    ArchiveEventsResponse
 from events.services import EventService
+
+from events.schemas import (
+    AllEventsResponse,
+    CreateEventSchema,
+    ActiveEventsResponse,
+    ArchiveEventsResponse,
+    ActiveEventDetailSchema,
+    ArchiveEventDetailSchema
+)
 
 events_router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -50,6 +57,28 @@ async def get_active_events(
 ) -> AllEventsResponse:
     events_service = EventService(session)
     result = await events_service.get_archive_events(user.id)
+    return result
+
+
+@events_router.get("/get_active/{event_id}", response_model=ActiveEventDetailSchema)
+async def get_single_active_event(
+        event_id: int,
+        user: Annotated[User, Depends(get_current_user)],
+        session: AsyncSession = Depends(get_async_session),
+) -> ActiveEventDetailSchema:
+    events_service = EventService(session)
+    result = await events_service.get_active_event(event_id)
+    return result
+
+
+@events_router.get("/get_archive/{event_id}", response_model=ArchiveEventDetailSchema)
+async def get_single_archive_event(
+        event_id: int,
+        user: Annotated[User, Depends(get_current_user)],
+        session: AsyncSession = Depends(get_async_session),
+) -> ActiveEventDetailSchema:
+    events_service = EventService(session)
+    result = await events_service.get_archive_event(event_id)
     return result
 
 

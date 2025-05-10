@@ -1,4 +1,4 @@
-from enum import  StrEnum
+from enum import StrEnum
 from typing import List
 from utils import format_event_dates
 from sqlalchemy import (
@@ -27,6 +27,7 @@ class RoleEnum(StrEnum):
     ADMIN = "admin"
     USER = "user"
     MANAGER = "manager"
+    LIGHTNING_DESIGNER="lightning_designer"
 
 
 class EventTypeEnum(StrEnum):
@@ -39,6 +40,7 @@ class EventTypeEnum(StrEnum):
 class EventStatusEnum(StrEnum):
     ACTIVE = "active"
     ARCHIVE = "archive"
+    PAID = "paid"
 
 
 class PaymentMethod(StrEnum):
@@ -66,30 +68,33 @@ class Event(Base):
     status: Mapped[EventStatusEnum] = mapped_column(SQLAlchemyEnum(EventStatusEnum, name='event_status_enum'),
                                                     default=EventStatusEnum.ACTIVE)
     area_plan: Mapped[bytes] = mapped_column(LargeBinary, nullable=True)
+    estimate_xlsx: Mapped[bytes] = mapped_column(LargeBinary, nullable=True)
     address: Mapped[str] = mapped_column(String)
     payment_method: Mapped[PaymentMethod] = mapped_column(SQLAlchemyEnum(PaymentMethod, name='payment_method_enum'))
     comment: Mapped[String] = mapped_column(Text, nullable=True)
-    site_area: Mapped[int] = mapped_column(Integer,nullable=True)
-    ceiling_height: Mapped[float] = mapped_column(Float,nullable=True)
+    site_area: Mapped[int] = mapped_column(Integer, nullable=True)
+    ceiling_height: Mapped[float] = mapped_column(Float, nullable=True)
     has_tv: Mapped[bool] = mapped_column(Boolean)
     min_install_time: Mapped[int] = mapped_column(Integer)
     total_power: Mapped[int] = mapped_column(Integer, nullable=True)
     has_downtime: Mapped[bool] = mapped_column(Boolean)
     estimate: Mapped[float] = mapped_column(Float, nullable=True)
     discount: Mapped[float] = mapped_column(Float, nullable=True)
+    total_sum:Mapped[float] = mapped_column(Float, nullable=True)
     customer_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     customer: Mapped["User"] = relationship(back_populates="events", foreign_keys=[customer_id])
     manager_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     manager: Mapped["User"] = relationship(back_populates="managed_events", foreign_keys=[manager_id])
-    equipment_count:Mapped[int]= mapped_column(Integer,nullable=True)
+    lightning_designer_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    lightning_designer: Mapped["User"] = relationship(back_populates="lightning_events", foreign_keys=[lightning_designer_id])
+    equipments: Mapped[List["EventEquipment"]] = relationship()
+    equipment_count: Mapped[int] = mapped_column(Integer, nullable=True)
 
     @property
     def formatted_period(self):
         return format_event_dates(self.event_date, self.event_end_date)
 
 
-
-# Вывод: 22 – 24 августа 2024 г.
 
 class Role(Base):
     __tablename__ = "roles"
@@ -107,6 +112,7 @@ class User(Base):
     person_position: Mapped[str] = mapped_column(String, nullable=True)
     events: Mapped[List["Event"]] = relationship(back_populates="customer", foreign_keys="[Event.customer_id]")
     managed_events: Mapped[List["Event"]] = relationship(back_populates="manager", foreign_keys="[Event.manager_id]")
+    lightning_events: Mapped[List["Event"]] = relationship(back_populates="lightning_designer", foreign_keys="[Event.lightning_designer_id]")
 
 
 class Reviews(Base):
@@ -152,12 +158,12 @@ class Equipment(Base):
     quantity: Mapped[int] = mapped_column(Integer)
 
 
-
 class EventEquipment(Base):
     __tablename__ = "eventequipments"
     equipment_id: Mapped[int] = mapped_column(ForeignKey("equipments.id"))
     event_id: Mapped[int] = mapped_column(ForeignKey("events.id"))
     quantity: Mapped[int] = mapped_column(Integer)
+    equipment: Mapped["Equipment"] = relationship()
 
 
 class Employee(Base):

@@ -13,7 +13,12 @@ class UserRepository:
         result = await self.session.execute(stmt)
         return result.scalars().one_or_none()
 
-    async def add_user(self, username,password,phone_number, email):
+    async def get_user_by_role(self, role: RoleEnum):
+        stmt = select(User).where(User.role==role)
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
+    async def add_user(self, username, password, phone_number, email):
         user = User(
             username=username,
             hashed_password=password,
@@ -26,4 +31,3 @@ class UserRepository:
         await self.session.commit()
         await self.session.refresh(user)
         return user
-

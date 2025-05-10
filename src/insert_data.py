@@ -1,10 +1,8 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timezone
+from datetime import datetime
 
 from auth.services import get_password_hash
 from database.models import *
 from database.database import async_session
-from src.dependencies import get_async_session
 
 
 async def generate_date():
@@ -1046,10 +1044,16 @@ async def generate_date():
 
             roles = [
                 Role(
-                    title="user"
+                    title=RoleEnum.USER
                 ),
                 Role(
-                    title="admin"
+                    title=RoleEnum.ADMIN
+                ),
+                Role(
+                    title=RoleEnum.LIGHTNING_DESIGNER
+                ),
+                Role(
+                    title=RoleEnum.MANAGER
                 ),
             ]
             session.add_all(roles)
@@ -1061,23 +1065,38 @@ async def generate_date():
                      phone_number="qwdqd",
                      avatar_url="qwdqwd",
                      email="user@user.com",
-                     role="user",
+                     role=RoleEnum.USER,
                      person_position='dw'),
                 User(username="admin",
                      hashed_password=get_password_hash("admin"),
                      phone_number="qwdqd",
                      avatar_url="qwdqwd",
                      email="admin@admin.com",
-                     role="admin",
+                     role=RoleEnum.ADMIN,
+                     person_position='dw'),
+                User(username="Designer",
+                     hashed_password=get_password_hash("designer"),
+                     phone_number="qwdqd",
+                     avatar_url="qwdqwd",
+                     email="designer@designer.com",
+                     role=RoleEnum.LIGHTNING_DESIGNER,
+                     person_position='dw'),
+                User(username="Manager",
+                     hashed_password=get_password_hash("manager"),
+                     phone_number="+79162964845",
+                     avatar_url="qwdqwd",
+                     email="manager@manager.com",
+                     role=RoleEnum.MANAGER,
                      person_position='dw'),
             ]
+
             session.add_all(users)
             await session.flush()
 
             events = [
                 Event(
-                    event_date=datetime(2025, 5, 14, 10),
-                    event_end_date=datetime(2025, 5, 15, 22),
+                    event_date=datetime(2026, 5, 23, 11),
+                    event_end_date=datetime(2026, 5, 23, 13),
                     type=EventTypeEnum.CONCERT,
                     status=EventStatusEnum.ACTIVE,
                     area_plan=b"dummy_binary_data_plan1",
@@ -1093,12 +1112,56 @@ async def generate_date():
                     has_downtime=False,
                     estimate=550000,
                     discount=0.15,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[0].id, quantity=1),
+                        EventEquipment(equipment_id=equipments[1].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[3].id, quantity=22),
+                        EventEquipment(equipment_id=equipments[6].id, quantity=2),
+                        EventEquipment(equipment_id=equipments[12].id, quantity=4),
+                    ],
                     customer_id=users[0].id,
-                    manager_id=users[1].id,
+                    manager_id=users[3].id,
                 ),
                 Event(
-                    event_date=datetime(2025, 5, 15, 10),
-                    event_end_date=datetime(2025, 5, 15, 22),
+                    event_date=datetime(2026, 10, 31, 10),
+                    event_end_date=datetime(2026, 11, 1, 9),
+                    type=EventTypeEnum.CONCERT,
+                    status=EventStatusEnum.ACTIVE,
+                    area_plan=b"dummy_binary_data_plan1",
+                    title="Хэллоуин-вечеринка в Stadium Adrenaline Stadium",
+                    address="Main Street 123, City Center",
+                    payment_method=PaymentMethod.EP,
+                    comment="VIP concert for 500 guests",
+                    site_area=800,
+                    ceiling_height=4.5,
+                    has_tv=True,
+                    min_install_time=120,
+                    total_power=15000,
+                    has_downtime=False,
+                    estimate=550000,
+                    discount=0.15,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[0].id, quantity=1),
+                        EventEquipment(equipment_id=equipments[1].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[2].id, quantity=22),
+                        EventEquipment(equipment_id=equipments[4].id, quantity=2),
+                        EventEquipment(equipment_id=equipments[6].id, quantity=11),
+                        EventEquipment(equipment_id=equipments[7].id, quantity=22),
+                        EventEquipment(equipment_id=equipments[8].id, quantity=43),
+                        EventEquipment(equipment_id=equipments[10].id, quantity=21),
+                        EventEquipment(equipment_id=equipments[23].id, quantity=22),
+                        EventEquipment(equipment_id=equipments[24].id, quantity=1),
+                        EventEquipment(equipment_id=equipments[25].id, quantity=1),
+                        EventEquipment(equipment_id=equipments[26].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[27].id, quantity=1),
+                        EventEquipment(equipment_id=equipments[20].id, quantity=2),
+                    ],
+                    customer_id=users[0].id,
+                    manager_id=users[3].id,
+                ),
+                Event(
+                    event_date=datetime(2026, 6, 15, 10),
+                    event_end_date=datetime(2026, 6, 15, 22),
                     type=EventTypeEnum.BIRTHDAY,
                     status=EventStatusEnum.ACTIVE,
                     area_plan=b"dummy_binary_data_plan2",
@@ -1115,8 +1178,49 @@ async def generate_date():
                     equipment_count=100,
                     estimate=None,
                     discount=None,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[2].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[3].id, quantity=2),
+                        EventEquipment(equipment_id=equipments[4].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[15].id, quantity=22),
+                        EventEquipment(equipment_id=equipments[9].id, quantity=2),
+                        EventEquipment(equipment_id=equipments[10].id, quantity=33),
+                        EventEquipment(equipment_id=equipments[0].id, quantity=22),
+                        EventEquipment(equipment_id=equipments[18].id, quantity=2),
+                    ],
                     customer_id=users[0].id,
-                    manager_id=users[1].id,
+                    manager_id=users[3].id,
+                ),
+                Event(
+                    event_date=datetime(2026, 6, 10, 10),
+                    event_end_date=datetime(2026, 6, 12, 22),
+                    type=EventTypeEnum.BIRTHDAY,
+                    status=EventStatusEnum.ACTIVE,
+                    area_plan=b"dummy_binary_data_plan2",
+                    title="Юбилейный концерт Григория Лепса в Лужниках",
+                    address="Tech Park, Building B",
+                    payment_method=PaymentMethod.INDIVIDUAL,
+                    comment="Annual tech conference",
+                    site_area=1200,
+                    ceiling_height=3.2,
+                    has_tv=False,
+                    min_install_time=180,
+                    total_power=25000,
+                    has_downtime=True,
+                    equipment_count=100,
+                    estimate=None,
+                    discount=None,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[2].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[3].id, quantity=2),
+                        EventEquipment(equipment_id=equipments[4].id, quantity=77),
+                        EventEquipment(equipment_id=equipments[8].id, quantity=2),
+                        EventEquipment(equipment_id=equipments[0].id, quantity=12),
+                        EventEquipment(equipment_id=equipments[15].id, quantity=12),
+
+                    ],
+                    customer_id=users[0].id,
+                    manager_id=users[3].id,
                 ),
                 Event(
                     event_date=datetime(2025, 3, 14, 10),
@@ -1135,10 +1239,18 @@ async def generate_date():
                     total_power=8000,
                     has_downtime=False,
                     estimate=500000,
-                    discount=None,
+                    discount=0.1,
+                    total_sum=500000 * 0.1,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[0].id, quantity=1),
+                        EventEquipment(equipment_id=equipments[1].id, quantity=2),
+                        EventEquipment(equipment_id=equipments[2].id, quantity=3),
+                    ],
                     equipment_count=250,
                     customer_id=users[0].id,
-                    manager_id=users[1].id,
+                    manager_id=users[3].id,
+                    lightning_designer_id=users[2].id
+
                 ),
                 Event(
                     event_date=datetime(2025, 4, 17, 10),
@@ -1157,11 +1269,127 @@ async def generate_date():
                     total_power=8000,
                     has_downtime=False,
                     estimate=1000000,
-                    discount=None,
-
+                    discount=0.15,
+                    total_sum=1000000 * 0.15,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[0].id, quantity=4),
+                        EventEquipment(equipment_id=equipments[1].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[4].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[7].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[6].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[8].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[9].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[10].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[12].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[11].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[13].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[14].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[15].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[16].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[20].id, quantity=5),
+                    ],
                     equipment_count=285,
                     customer_id=users[0].id,
-                    manager_id=users[1].id,
+                    manager_id=users[3].id,
+                    lightning_designer_id=users[2].id
+
+                )
+                , Event(
+                    event_date=datetime(2025, 1, 1, 10),
+                    event_end_date=datetime(2025, 1, 2, 22),
+                    type=EventTypeEnum.WEDDING,
+                    status=EventStatusEnum.ARCHIVE,
+                    area_plan=b"dummy_binary_data_plan3",
+                    title="Агутин на ВТБ Арене",
+                    address="Exhibition Hall, Downtown",
+                    payment_method=PaymentMethod.LLL,
+                    comment="Art exhibition opening",
+                    site_area=500,
+                    ceiling_height=2.8,
+                    has_tv=True,
+                    min_install_time=90,
+                    total_power=8000,
+                    has_downtime=False,
+                    estimate=1000000,
+                    discount=0,
+                    total_sum=1000000,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[0].id, quantity=4),
+                        EventEquipment(equipment_id=equipments[7].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[12].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[1].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[24].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[15].id, quantity=3),
+                        EventEquipment(equipment_id=equipments[23].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[20].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[8].id, quantity=5),
+
+                    ],
+                    equipment_count=285,
+                    customer_id=users[0].id,
+                    manager_id=users[3].id,
+                    lightning_designer_id=users[3].id,
+                ),
+                Event(
+                    event_date=datetime(2025, 2, 2, 10),
+                    event_end_date=datetime(2025, 2, 3, 22),
+                    type=EventTypeEnum.WEDDING,
+                    status=EventStatusEnum.ARCHIVE,
+                    area_plan=b"dummy_binary_data_plan3",
+                    title="Big Love Show 2026 на Live Арене",
+                    address="Exhibition Hall, Downtown",
+                    payment_method=PaymentMethod.LLL,
+                    comment="Art exhibition opening",
+                    site_area=500,
+                    ceiling_height=2.8,
+                    has_tv=True,
+                    min_install_time=90,
+                    total_power=8000,
+                    has_downtime=False,
+                    estimate=1000000,
+                    discount=0.2,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[13].id, quantity=4),
+                        EventEquipment(equipment_id=equipments[4].id, quantity=22),
+                        EventEquipment(equipment_id=equipments[8].id, quantity=12),
+
+                        EventEquipment(equipment_id=equipments[11].id, quantity=3),
+
+                    ],
+                    equipment_count=285,
+                    customer_id=users[0].id,
+                    manager_id=users[3].id,
+                    lightning_designer_id=users[3].id,
+
+                ),
+                Event(
+                    event_date=datetime(2025, 3, 1, 10),
+                    event_end_date=datetime(2025, 3, 2, 22),
+                    type=EventTypeEnum.WEDDING,
+                    status=EventStatusEnum.ARCHIVE,
+                    area_plan=b"dummy_binary_data_plan3",
+                    title="Концерт Баста в Мегаспорт",
+                    address="Exhibition Hall, Downtown",
+                    payment_method=PaymentMethod.LLL,
+                    comment="Art exhibition opening",
+                    site_area=500,
+                    ceiling_height=2.8,
+                    has_tv=True,
+                    min_install_time=90,
+                    total_power=8000,
+                    has_downtime=False,
+                    estimate=1000000,
+                    discount=0.15,
+                    equipments=[
+                        EventEquipment(equipment_id=equipments[1].id, quantity=100),
+                        EventEquipment(equipment_id=equipments[10].id, quantity=5),
+                        EventEquipment(equipment_id=equipments[4].id, quantity=5),
+                    ],
+                    equipment_count=285,
+                    customer_id=users[0].id,
+                    manager_id=users[3].id,
+                    lightning_designer_id=users[3].id,
+
                 )
             ]
             session.add_all(events)
