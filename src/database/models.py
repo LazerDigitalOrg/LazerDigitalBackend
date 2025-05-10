@@ -75,12 +75,13 @@ class Event(Base):
     min_install_time: Mapped[int] = mapped_column(Integer)
     total_power: Mapped[int] = mapped_column(Integer, nullable=True)
     has_downtime: Mapped[bool] = mapped_column(Boolean)
-    estimate: Mapped[int] = mapped_column(Integer, nullable=True)
+    estimate: Mapped[float] = mapped_column(Float, nullable=True)
     discount: Mapped[float] = mapped_column(Float, nullable=True)
     customer_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     customer: Mapped["User"] = relationship(back_populates="events", foreign_keys=[customer_id])
     manager_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     manager: Mapped["User"] = relationship(back_populates="managed_events", foreign_keys=[manager_id])
+    equipment_count:Mapped[int]= mapped_column(Integer,nullable=True)
 
     @property
     def formatted_period(self):
@@ -149,6 +150,7 @@ class Equipment(Base):
     available_quantity: Mapped[int] = mapped_column(Integer)
     photo_url: Mapped[str] = mapped_column(String, nullable=True)
     quantity: Mapped[int] = mapped_column(Integer)
+
 
 
 class EventEquipment(Base):

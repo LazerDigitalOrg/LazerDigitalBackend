@@ -1,5 +1,5 @@
 from sqlalchemy import select, insert
-from database.models import Event, EventStatusEnum
+from database.models import Event, EventStatusEnum, EventEquipment
 from events.schemas import CreateEventSchema
 
 
@@ -8,11 +8,15 @@ class EventRepository:
         self.session = session
 
     async def get_all_events(self, limit, offset):
-        stmt = select(Event).limit(limit).offset(offset)
+        stmt = (select(Event)
+                .limit(limit)
+                .offset(offset)
+                .order_by(Event.created_at.desc()))
+
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def add(self, new_event:CreateEventSchema, user_id):
+    async def add(self, new_event: CreateEventSchema, user_id):
         event = Event(
             event_date=new_event.event_date,
             event_end_date=new_event.event_end_date,
@@ -37,3 +41,12 @@ class EventRepository:
         await self.session.commit()
         await self.session.refresh(event)
         return event
+
+    async def get_events_by_condition(self, predicate):
+        stmt = (
+            select(Event).
+            where(predicate).
+            order_by(Event.created_at.desc())
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()

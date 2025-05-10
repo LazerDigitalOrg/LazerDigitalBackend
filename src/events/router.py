@@ -9,7 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth.helpers import get_admin_user, get_current_user
 from database.models import User
 from dependencies import get_async_session
-from events.schemas import AllEventsSchema, AllEventsResponse, CreateEventSchema
+from events.schemas import AllEventsSchema, AllEventsResponse, CreateEventSchema, ActiveEventsResponse, \
+    ArchiveEventsResponse
 from events.services import EventService
 
 events_router = APIRouter(prefix="/events", tags=["Events"])
@@ -19,8 +20,8 @@ events_router = APIRouter(prefix="/events", tags=["Events"])
 async def get_all_events(
         user: Annotated[User, Depends(get_admin_user)],
         session: AsyncSession = Depends(get_async_session),
-        limit: int | None = 1,
-        page: int | None = 10,
+        limit: int | None = 10,
+        page: int | None = 1,
 ) -> AllEventsResponse:
     if not user:
         raise HTTPException(
@@ -32,12 +33,33 @@ async def get_all_events(
     return result
 
 
+@events_router.get("/get_active", response_model=ActiveEventsResponse)
+async def get_active_events(
+        user: Annotated[User, Depends(get_admin_user)],
+        session: AsyncSession = Depends(get_async_session),
+) -> AllEventsResponse:
+    events_service = EventService(session)
+    result = await events_service.get_active_events()
+    return result
+
+
+@events_router.get("/get_archive", response_model=ArchiveEventsResponse)
+async def get_active_events(
+        user: Annotated[User, Depends(get_admin_user)],
+        session: AsyncSession = Depends(get_async_session),
+) -> AllEventsResponse:
+    events_service = EventService(session)
+    result = await events_service.get_archive_events()
+
+    return result
+
+
 @events_router.post("/add")
 async def create_event(
         new_event: CreateEventSchema,
         user: Annotated[User, Depends(get_current_user)],
         session: AsyncSession = Depends(get_async_session),
-)->dict:
+) -> dict:
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

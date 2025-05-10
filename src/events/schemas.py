@@ -16,6 +16,28 @@ class AllEventsResponse(BaseModel):
     offset: int
     events: List[AllEventsSchema]
 
+
+class ActiveEventSchema(BaseModel):
+    title: str
+    date: str
+    estimate: float | None
+
+
+class ArchiveEventSchema(BaseModel):
+    title: str
+    date: str
+    equipment_count: int | None
+    estimate: float | None
+
+
+class ActiveEventsResponse(BaseModel):
+    events: List[ActiveEventSchema]
+
+
+class ArchiveEventsResponse(BaseModel):
+    events: List[ArchiveEventSchema]
+
+
 class CreateEventSchema(BaseModel):
     event_date: datetime
     event_end_date: datetime
@@ -25,10 +47,10 @@ class CreateEventSchema(BaseModel):
     address: str
     payment_method: PaymentMethod
     comment: str | None
-    site_area: float |None
+    site_area: float | None
     ceiling_height: float | None
     has_tv: bool
-    min_install_time : int
+    min_install_time: int
     total_power: int | None
     has_downtime: bool
     estimate: int | None
@@ -41,7 +63,6 @@ class CreateEventSchema(BaseModel):
             return datetime.strptime(value, "%Y-%m-%d %H:%M")
         except ValueError:
             try:
-                # Если не подходит, пробуем ISO 8601 (например, "2024-05-20T18:30:00")
                 return datetime.fromisoformat(value)
             except ValueError:
                 raise ValueError(
