@@ -19,7 +19,8 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "HEAD", "OPTIONS", "DELETE","PUT"],
-    allow_headers=["Access-Control-Allow-Headers", 'Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
+    allow_headers=["Access-Control-Allow-Headers", 'Content-Type', 'Authorization', 'Access-Control-Allow-Origin',
+                   'Access-Control-Allow-Credentials'],
 )
 
 if __name__ == "__main__":
