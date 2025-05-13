@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Union
 
 from fastapi import APIRouter
 from fastapi.params import Depends
@@ -6,9 +6,8 @@ from fastapi.exceptions import HTTPException
 from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.helpers import get_admin_user, get_current_user
 from database.models import User
-from dependencies import get_async_session
+from dependencies import get_async_session, get_current_user, get_admin_user
 from events.services import EventService
 
 from events.schemas import (
@@ -17,7 +16,8 @@ from events.schemas import (
     ActiveEventsResponse,
     ArchiveEventsResponse,
     ActiveEventDetailSchema,
-    ArchiveEventDetailSchema
+    ArchiveEventDetailSchema,
+    AdminActiveEventResponse
 )
 
 events_router = APIRouter(prefix="/events", tags=["Events"])
@@ -60,7 +60,7 @@ async def get_active_events(
     return result
 
 
-@events_router.get("/get_active/{event_id}", response_model=ActiveEventDetailSchema)
+@events_router.get("/get_active/{event_id}", response_model=Union[ActiveEventDetailSchema, AdminActiveEventResponse])
 async def get_single_active_event(
         event_id: int,
         user: Annotated[User, Depends(get_current_user)],

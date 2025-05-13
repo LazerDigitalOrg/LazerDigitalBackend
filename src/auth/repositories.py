@@ -14,7 +14,7 @@ class UserRepository:
         return result.scalars().one_or_none()
 
     async def get_user_by_role(self, role: RoleEnum):
-        stmt = select(User).where(User.role==role)
+        stmt = select(User).where(User.role == role)
         result = await self.session.execute(stmt)
         return result.scalars().first()
 

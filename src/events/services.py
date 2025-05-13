@@ -33,6 +33,7 @@ class EventService:
             AllEventsSchema(
                 title=event.title,
                 date=event.formatted_period,
+                status=event.status
             )
             for event in events
         ]

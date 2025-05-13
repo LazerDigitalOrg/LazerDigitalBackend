@@ -6,9 +6,7 @@ from auth.schemas import TokenSchema, UserSchema
 from database.models import User
 from src.auth.schemas import UserRegisterSchema, LoginSchema
 from src.auth.services import AuthService
-from dependencies import get_async_session
-
-from src.auth.helpers import get_current_user
+from dependencies import get_async_session, get_current_user
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 

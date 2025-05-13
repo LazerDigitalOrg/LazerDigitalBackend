@@ -12,6 +12,9 @@ from database.models import EventTypeEnum, EventStatusEnum, PaymentMethod
 class AllEventsSchema(BaseModel):
     title: str
     date: str
+    status: EventStatusEnum
+class AdminActiveEventResponse(BaseModel):
+    pass
 
 
 class AllEventsResponse(BaseModel):

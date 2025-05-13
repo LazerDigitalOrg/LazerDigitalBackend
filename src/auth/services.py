@@ -12,6 +12,7 @@ from src.auth.repositories import UserRepository
 from fastapi.exceptions import HTTPException
 from fastapi import status
 from utils import pwd_context
+
 ACCESS_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TYPE = "refresh"
 
@@ -129,7 +130,7 @@ class AuthService:
 
     async def refresh_token(
             self,
-            refresh_token: str  # Добавлена аннотация типа
+            refresh_token: str
     ) -> TokenSchema:
         if not refresh_token:
             raise HTTPException(
@@ -178,8 +179,7 @@ class AuthService:
                 detail="User not found"
             )
         access_token = self.token_manager.create_token({"sub": existing_user.email}, token_type=ACCESS_TOKEN_TYPE)
-        print(existing_user)
-        print(access_token)
+
         return TokenSchema(access_token=access_token)
 
     async def get_user(self, email) -> User:

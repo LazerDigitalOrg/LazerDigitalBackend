@@ -16,19 +16,19 @@ async def get_equipment_or_equipments(
         session: Annotated[AsyncSession, Depends(get_async_session)],
         category_slug,
         path: str,
-        limit: int | None = 1,
-        page: int | None = 10,
+        limit: int | None = 10,
+        page: int | None = 1,
 ):
+
     equipment_service = EquipmentService(session)
     category_service = CategoryService(session)
 
     path = path.split("/")
-
     if len(path) == 2:
         return await equipment_service.get_single_equipment(path[1],category_slug+"/"+path[0])
     if len(path) == 1:
-        if await category_service.is_category(path[0]):
-            print(category_slug+"/"+path[0])
+        if await category_service.is_category(category_slug+"/"+path[0]):
+
             equipments = await equipment_service.get_equipments_by_category(limit, page,category_slug+"/"+path[0])
             return equipments
         else:

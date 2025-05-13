@@ -31,10 +31,10 @@ class RoleEnum(StrEnum):
 
 
 class EventTypeEnum(StrEnum):
-    WEDDING = "свадьба"
-    CORPORATIVE = "корпоратив"
-    CONCERT = "концерт"
-    BIRTHDAY = "день рождения"
+    WEDDING = "Свадьба"
+    CORPORATIVE = "Корпоратив"
+    CONCERT = "Концерт"
+    BIRTHDAY = "День рождения"
 
 
 class EventStatusEnum(StrEnum):
@@ -44,9 +44,9 @@ class EventStatusEnum(StrEnum):
 
 
 class PaymentMethod(StrEnum):
-    EP = "ип"
-    LLL = "ооо"
-    INDIVIDUAL = "физ. лицо"
+    EP = "ИП"
+    LLL = "ОО"
+    INDIVIDUAL = "Физ. лицо"
 
 
 class RefreshToken(Base):

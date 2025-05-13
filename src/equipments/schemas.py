@@ -9,6 +9,7 @@ class EquipmentSchema(BaseModel):
     description: Optional[str]
     characteristics: Optional[Union[dict, List[str]]]
     photo_url: Optional[str]
+    price: Optional[int]
 
     @field_validator('characteristics')
     def validate_structure(cls, value: dict):
@@ -21,9 +22,12 @@ class EquipmentCategorySchema(BaseModel):
     title: str
     equipment_slug: str
     photo_url: str
+    price: Optional[int]
 
 
 class EquipmentResponse(BaseModel):
+    title:str
+    description: Optional[str]
     equipments: List[EquipmentCategorySchema]
 
 

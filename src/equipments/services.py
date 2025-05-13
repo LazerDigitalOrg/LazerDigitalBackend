@@ -9,6 +9,7 @@ class EquipmentService:
 
     def __init__(self, session):
         self.equipment_repository = EquipmentRepository(session)
+        self.category_repository = CategoryRepository(session)
 
     async def get_equipments_by_category(
             self, limit: int, page: int, category: str
@@ -16,35 +17,40 @@ class EquipmentService:
         if page < 1:
             page = 1
         offset = (page - 1) * limit
-        print(limit,offset)
         equipments = await self.equipment_repository.get_equipments_by_category(
             limit, offset, category
         )
-        print(equipments)
+        category = await self.category_repository.get_single_category(category_slug=category)
 
         equipments = [
             EquipmentCategorySchema(
                 title=equipment.title,
                 equipment_slug=equipment.equipment_slug,
-                photo_url=equipment.photo_url
+                photo_url=equipment.photo_url,
+                price=equipment.rental_price
             )
             for equipment in equipments
         ]
 
-        return EquipmentResponse(equipments=equipments)
+        return EquipmentResponse(
+            equipments=equipments,
+            description=category.description,
+            title=category.title
+        )
 
     async def get_single_equipment(
             self,
             equipment_slug: str,
             category_slug: str
     ) -> Optional[EquipmentSchema]:
-        equipment = await self.equipment_repository.get_single_equipment(equipment_slug,category_slug)
+        equipment = await self.equipment_repository.get_single_equipment(equipment_slug, category_slug)
         if equipment is not None:
             return EquipmentSchema(
                 title=equipment.title,
                 description=equipment.description,
                 characteristics=equipment.characteristics,
                 photo_url=equipment.photo_url,
+                price=equipment.rental_price
             )
         return None
 
