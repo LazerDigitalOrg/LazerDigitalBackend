@@ -1,4 +1,4 @@
-from pydantic import BaseModel,EmailStr
+from pydantic import BaseModel, EmailStr
 
 
 class UserRegisterSchema(BaseModel):
@@ -7,20 +7,28 @@ class UserRegisterSchema(BaseModel):
     email: EmailStr
     phone_number: str
 
+
 class UserSchema(BaseModel):
     username: str
     email: EmailStr
     phone_number: str
-    active: bool | None = True
+    role: bool | None = True
+
+
+class UserRole(BaseModel):
+    role: str
+
 
 class TokenSchema(BaseModel):
     access_token: str
     refresh_token: str | None = None
-    token_type: str| None ="Bearer"
+    token_type: str | None = "Bearer"
+
 
 class LoginSchema(BaseModel):
     password: str
     email: EmailStr
+
 
 class TokenData(BaseModel):
     email: str | None = None

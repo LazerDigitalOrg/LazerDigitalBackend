@@ -2,11 +2,12 @@ from datetime import datetime, timezone, timedelta
 from typing import Annotated
 from fastapi import APIRouter, Depends, FastAPI, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from auth.schemas import TokenSchema, UserSchema
+from auth.schemas import TokenSchema, UserSchema, UserRole
 from database.models import User
 from src.auth.schemas import UserRegisterSchema, LoginSchema
 from src.auth.services import AuthService
-from dependencies import get_async_session, get_current_user
+from dependencies import get_async_session
+from auth.dependencies import get_current_user
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -26,7 +27,7 @@ async def generate_tokens(result: TokenSchema,
     )
 
 
-@auth_router.post("/register", response_model=dict)
+@auth_router.post("/register", response_model=UserRole)
 async def register_user(
         session: Annotated[AsyncSession, Depends(get_async_session)],
         user: UserRegisterSchema,
@@ -34,11 +35,12 @@ async def register_user(
 ):
     auth_service = AuthService(session)
     result = await auth_service.add_user(user)
-    await generate_tokens(result, response)
-    return {"status": "OK", "detail": "Registered"}
+    tokens = result.get("tokens")
+    await generate_tokens(tokens, response)
+    return result.get("role")
 
 
-@auth_router.post("/login", response_model=dict)
+@auth_router.post("/login", response_model=UserRole)
 async def login_user(
         session: Annotated[AsyncSession, Depends(get_async_session)],
         user: LoginSchema,
@@ -47,15 +49,16 @@ async def login_user(
 ):
     auth_service = AuthService(session)
     result = await auth_service.login_user(user.email.__str__(), user.password)
-    await generate_tokens(result, response)
-    return {"status": "OK", "detail": "Authorized"}
+    tokens = result.get("tokens")
+    await generate_tokens(tokens, response)
+    return result.get("role")
 
 
 @auth_router.post("/logout")
 async def logout_user(response: Response):
     response.delete_cookie("refresh_token")
     response.delete_cookie("access_token")
-    return {"status": "OK", "detail": "Logout"}
+    return {"result": "OK"}
 
 
 @auth_router.get("/users/me/", response_model=UserSchema)

@@ -7,7 +7,7 @@ from database.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-from auth.schemas import UserSchema, TokenSchema, UserRegisterSchema
+from auth.schemas import UserSchema, TokenSchema, UserRegisterSchema, UserRole
 from src.auth.repositories import UserRepository
 from fastapi.exceptions import HTTPException
 from fastapi import status
@@ -16,13 +16,13 @@ from utils import pwd_context
 ACCESS_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TYPE = "refresh"
 
+
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password):
     return pwd_context.hash(password)
-
 
 
 class TokenManager():
@@ -103,8 +103,13 @@ class AuthService:
         access_token = self.token_manager.create_token({"sub": user.email}, token_type=ACCESS_TOKEN_TYPE)
         refresh_token = self.token_manager.create_token({"sub": user.email}, token_type=REFRESH_TOKEN_TYPE)
 
-        return TokenSchema(access_token=access_token,
-                           refresh_token=refresh_token)
+        result = {
+            "tokens": TokenSchema(access_token=access_token,
+                                  refresh_token=refresh_token),
+            "role": UserRole(role=user.role)
+        }
+
+        return result
 
     async def login_user(
             self, email_address, password
@@ -124,9 +129,13 @@ class AuthService:
 
         access_token = self.token_manager.create_token({"sub": user.email}, token_type=ACCESS_TOKEN_TYPE)
         refresh_token = self.token_manager.create_token({"sub": user.email}, token_type=REFRESH_TOKEN_TYPE)
+        result = {
+            "tokens": TokenSchema(access_token=access_token,
+                                  refresh_token=refresh_token),
+            "role": UserRole(role=user.role)
+        }
 
-        return TokenSchema(access_token=access_token,
-                           refresh_token=refresh_token)
+        return result
 
     async def refresh_token(
             self,

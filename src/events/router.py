@@ -7,7 +7,8 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User
-from dependencies import get_async_session, get_current_user, get_admin_user
+from dependencies import get_async_session
+from auth.dependencies import get_current_user, get_admin_user
 from events.services import EventService
 
 from events.schemas import (
