@@ -1,6 +1,6 @@
 from enum import StrEnum
 from typing import List
-from utils import format_event_dates
+from src.utils import format_event_dates
 from sqlalchemy import (
     String,
     DateTime,
@@ -38,14 +38,14 @@ class EventTypeEnum(StrEnum):
 
 
 class EventStatusEnum(StrEnum):
-    ACTIVE = "active"
-    ARCHIVE = "archive"
-    PAID = "paid"
+    ACTIVE = "ACTIVE"
+    ARCHIVE = "ARCHIVE"
+    PAID = "PAID"
 
 
 class PaymentMethod(StrEnum):
     EP = "ИП"
-    LLL = "ОО"
+    LLL = "ООО"
     INDIVIDUAL = "Физ. лицо"
 
 
@@ -141,10 +141,11 @@ class Brand(Base):
 
 class Equipment(Base):
     __tablename__ = "equipments"
-    title: Mapped[str] = mapped_column(String)
+    title: Mapped[str] = mapped_column(String,unique=True)
     rental_price: Mapped[int] = mapped_column(Integer, nullable=True)
     brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"), nullable=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
+    category: Mapped["Category"] = relationship()
     category_slug: Mapped[str] = mapped_column(String)
     equipment_slug: Mapped[str] = mapped_column(String, nullable=True, unique=True)
     power: Mapped[int] = mapped_column(String, nullable=True)

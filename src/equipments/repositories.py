@@ -1,6 +1,7 @@
-from sqlalchemy import select, desc, asc, and_
+from sqlalchemy import select, desc, asc, and_, update
+from sqlalchemy.orm import selectinload
 
-from database.models import Equipment, Category
+from database.models import Equipment, Category, EventEquipment
 
 
 class EquipmentRepository:
@@ -12,10 +13,22 @@ class EquipmentRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def get_single_equipment(self, equipment_slug, category_slug):
-        print(category_slug)
-        stmt = select(Equipment).where(
-            and_(Equipment.equipment_slug == equipment_slug, Equipment.category_slug == category_slug))
+    async def get_single_equipment_by_condition(self, *predicate, with_for_update=False):
+        stmt = select(Equipment).where(*predicate)
+        if with_for_update:
+            stmt = stmt.with_for_update()
+        result = await self.session.execute(stmt)
+        return result.scalars().one_or_none()
+
+
+class EventEquipmentRepository:
+    def __init__(self, session):
+        self.session = session
+
+    async def get_event_equipment_by_condition(self, *predicate, with_for_update=False):
+        stmt = select(EventEquipment).where(*predicate)
+        if with_for_update:
+            stmt = stmt.with_for_update()
         result = await self.session.execute(stmt)
         return result.scalars().one_or_none()
 
@@ -29,8 +42,9 @@ class CategoryRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def get_single_category(self,category_slug):
+    async def get_single_category(self, category_slug):
         stmt = select(Category).filter_by(category_slug=category_slug)
+
         result = await self.session.execute(stmt)
         return result.scalars().one_or_none()
 

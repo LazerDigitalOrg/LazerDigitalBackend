@@ -578,26 +578,6 @@ async def generate_date():
                     quantity=10
                 ),
                 Equipment(
-                    title="Color Force 48",
-                    rental_price=5000,
-                    brand_id=brands[13].id,
-                    category_id=categories[4].id,
-                    category_slug="4-etc-light",
-                    power="3000 Вт",
-                    producer="Chroma-Q / США",
-                    characteristics={"Производитель": "Chroma-Q / США", "Мощность": "480 Вт",
-                                     "Общая мощность": "480 Вт",
-                                     "Zoom": "23°",
-                                     "Яроксть": "8000 лм",
-                                     "Цветовая система": "RGB+A",
-                                     },
-                    description="""Color Force – это очень яркий прибор, позволяющий выполнить заливку светом на 8 метров. Новые технологии управления светом и система смены цвета RGB+A""",
-                    weight=12,
-                    available_quantity=10,
-                    photo_url="https://laserkinetics.ru/uploadedFiles/eshopimages/icons/340x340_cropped/02_22.png",
-                    quantity=10
-                ),
-                Equipment(
                     title="Color Block 2",
                     rental_price=5000,
                     brand_id=brands[13].id,
@@ -977,7 +957,7 @@ async def generate_date():
                     category_id=nested_categories[2].id,
 
                     equipment_slug="lebedki-chain-master",
-                    category_slug=nested_categories[1].category_slug,
+                    category_slug=nested_categories[2].category_slug,
                     characteristics={
                         "Технические характеристики": ["Длина цепи: 16м, 24м, 250кг, 350кг, 500кг, 1000кг"]},
                     weight=0,

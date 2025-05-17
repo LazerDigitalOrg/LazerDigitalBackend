@@ -6,7 +6,7 @@ from fastapi.exceptions import HTTPException
 from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import User
+from database.models import User, RoleEnum
 from dependencies import get_async_session
 from auth.dependencies import get_current_user, get_admin_user
 from events.services import EventService
@@ -18,7 +18,8 @@ from events.schemas import (
     ArchiveEventsResponse,
     ActiveEventDetailSchema,
     ArchiveEventDetailSchema,
-    AdminActiveEventResponse
+    AdminActiveEventResponse,
+    ConfirmEventSchema
 )
 
 events_router = APIRouter(prefix="/events", tags=["Events"])
@@ -61,14 +62,36 @@ async def get_active_events(
     return result
 
 
-@events_router.get("/get_active/{event_id}", response_model=Union[ActiveEventDetailSchema, AdminActiveEventResponse])
+@events_router.get("/get_active/{event_id}", response_model=ActiveEventDetailSchema)
 async def get_single_active_event(
         event_id: int,
         user: Annotated[User, Depends(get_current_user)],
         session: AsyncSession = Depends(get_async_session),
 ) -> ActiveEventDetailSchema:
     events_service = EventService(session)
-    result = await events_service.get_active_event(event_id)
+    result = await events_service.get_active_event(user_id=user.id, event_id=event_id)
+    return result
+
+
+@events_router.get("/admin/get_active/{event_id}", response_model=AdminActiveEventResponse)
+async def get_single_active_event(
+        event_id: int,
+        user: Annotated[User, Depends(get_admin_user)],
+        session: AsyncSession = Depends(get_async_session),
+) -> ActiveEventDetailSchema:
+    events_service = EventService(session)
+    result = await events_service.get_admin_active_event(event_id)
+    return result
+
+
+@events_router.post("/admin/confirm_event/{event_id}")
+async def get_single_active_event(
+        event: ConfirmEventSchema,
+        user: Annotated[User, Depends(get_admin_user)],
+        session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    events_service = EventService(session)
+    result = await events_service.confirm_event(event)
     return result
 
 
@@ -79,7 +102,8 @@ async def get_single_archive_event(
         session: AsyncSession = Depends(get_async_session),
 ) -> ActiveEventDetailSchema:
     events_service = EventService(session)
-    result = await events_service.get_archive_event(event_id)
+    result = await events_service.get_archive_event(event_id, user)
+
     return result
 
 

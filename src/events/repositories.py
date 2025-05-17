@@ -1,5 +1,5 @@
-from sqlalchemy import select, insert
-from sqlalchemy.orm import joinedload,selectinload
+from sqlalchemy import select, insert, and_
+from sqlalchemy.orm import joinedload, selectinload
 
 from database.models import Event, EventStatusEnum, EventEquipment, Equipment
 from events.schemas import CreateEventSchema
@@ -54,16 +54,18 @@ class EventRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def get_single_event(self, event_id):
+    async def get_single_event_by_condition(self, *predicate, with_for_update=False):
         stmt = (
             select(Event)
             .options(
                 selectinload(Event.equipments).joinedload(EventEquipment.equipment)
-                ,joinedload(Event.manager),joinedload(Event.lightning_designer)
+                , joinedload(Event.manager), joinedload(Event.lightning_designer)
 
-            ).where(Event.id == event_id)
+            ).where(*predicate)
         )
+        if with_for_update:
+            stmt = stmt.with_for_update(of=Event)
 
         result = await self.session.execute(stmt)
-        event = result.unique().one()
+        event = result.unique().one_or_none()
         return event

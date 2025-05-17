@@ -25,8 +25,35 @@ class EquipmentCategorySchema(BaseModel):
     price: Optional[int]
 
 
+
+class EquipmentAdminDetailSchema(BaseModel):
+    title: str
+
+
+class CategoryEquipmentAdminDetailSchema(BaseModel):
+    category_title: str
+    equipments: List[EquipmentAdminDetailSchema]
+
+
+class ConfirmEquipmentAdminDetailSchema(EquipmentAdminDetailSchema):
+    title: str
+    quantity: int
+
+
+# {"equipmnets": [
+#     {"Приборы скользящего света": [
+#         {"quipment_id": 1, "title": "AXCOR BEAM"},
+#         {"quipment_id": 2, "title": "AXCOR BEAM M6"}
+# ]},
+#     {"Световые пульты"[]}]}
+
+# {"equipmnets": [
+#         {"quantity": 1, "equipment_title": "AXCOR BEAM"},
+#         {"quantity": 2, "equipment_title": "AXCOR BEAM M6"}
+# ]},
+
 class EquipmentResponse(BaseModel):
-    title:str
+    title: str
     description: Optional[str]
     equipments: List[EquipmentCategorySchema]
 

@@ -1,20 +1,22 @@
 from datetime import datetime, timezone
-from mailbox import FormatError
-from typing import List, Optional, Union
+from typing import List
 
-from fastapi import HTTPException,status
+from fastapi import HTTPException, status
 from pydantic import BaseModel, field_validator, validator
-from pydantic.v1 import DateTimeError, DateError
 
 from database.models import EventTypeEnum, EventStatusEnum, PaymentMethod
+from equipments.schemas import (
+    ConfirmEquipmentAdminDetailSchema,
+
+    CategoryEquipmentAdminDetailSchema
+)
 
 
 class AllEventsSchema(BaseModel):
     title: str
     date: str
+    event_id:int
     status: EventStatusEnum
-class AdminActiveEventResponse(BaseModel):
-    pass
 
 
 class AllEventsResponse(BaseModel):
@@ -47,6 +49,33 @@ class EventDetailBaseSchema(BaseModel):
             return value.strftime("%Y-%m-%d %H:%M")
         except ValueError:
             return str(value)
+
+
+class AdminActiveEventResponse(EventDetailBaseSchema):
+    event_date: datetime | str
+    event_end_date: datetime | str
+    title: str
+    type: EventTypeEnum
+    area_plan: bytes | None
+    address: str
+    payment_method: PaymentMethod
+    comment: str | None
+    site_area: float | None
+    ceiling_height: float | None
+    has_tv: bool
+    min_install_time: int
+    total_power: int | None
+    has_downtime: bool
+    estimate: float
+    discount: float
+    equipments: List[str]
+    equipment_catalog: List[CategoryEquipmentAdminDetailSchema]
+
+
+class ConfirmEventSchema(BaseModel):
+    event_id: int
+    discount: float
+    equipments: List[ConfirmEquipmentAdminDetailSchema]
 
 
 class ArchiveEventDetailSchema(EventDetailBaseSchema):

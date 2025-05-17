@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from database.models import Equipment
 from src.equipments.repositories import EquipmentRepository, CategoryRepository
 from src.equipments.schemas import EquipmentSchema, EquipmentResponse, CategoryResponse, EquipmentCategorySchema, \
     CategorySchema
@@ -43,7 +44,10 @@ class EquipmentService:
             equipment_slug: str,
             category_slug: str
     ) -> Optional[EquipmentSchema]:
-        equipment = await self.equipment_repository.get_single_equipment(equipment_slug, category_slug)
+        equipment = await self.equipment_repository.get_single_equipment_by_condition(
+            Equipment.equipment_slug == equipment_slug,
+            Equipment.category_slug == category_slug
+        )
         if equipment is not None:
             return EquipmentSchema(
                 title=equipment.title,
