@@ -3,19 +3,15 @@ from typing import List
 
 from fastapi import HTTPException, status
 from pydantic import BaseModel, field_validator, validator
+from typing_extensions import Annotated
 
 from database.models import EventTypeEnum, EventStatusEnum, PaymentMethod
-from equipments.schemas import (
-    ConfirmEquipmentAdminDetailSchema,
-
-    CategoryEquipmentAdminDetailSchema
-)
 
 
 class AllEventsSchema(BaseModel):
     title: str
     date: str
-    event_id:int
+    event_id: int
     status: EventStatusEnum
 
 
@@ -51,6 +47,20 @@ class EventDetailBaseSchema(BaseModel):
             return str(value)
 
 
+class EquipmentTitleSchema(BaseModel):
+    title: str
+
+
+class EquipmentCategorySchema(BaseModel):
+    category_title: str
+    equipments_catalog: List[EquipmentTitleSchema]
+
+
+class EquipmentQuantitySchema(BaseModel):
+    title: str
+    quantity: int
+
+
 class AdminActiveEventResponse(EventDetailBaseSchema):
     event_date: datetime | str
     event_end_date: datetime | str
@@ -69,13 +79,21 @@ class AdminActiveEventResponse(EventDetailBaseSchema):
     estimate: float
     discount: float
     equipments: List[str]
-    equipment_catalog: List[CategoryEquipmentAdminDetailSchema]
 
+class ConfirmEventEquipmentsSchema(BaseModel):
+    title: str
+    quantity: int
 
 class ConfirmEventSchema(BaseModel):
     event_id: int
     discount: float
-    equipments: List[ConfirmEquipmentAdminDetailSchema]
+    equipments: List[ConfirmEventEquipmentsSchema]
+
+    @field_validator("discount")
+    def check_discount(cls, value: float) -> float:
+        if (value < 0 or value >= 100):
+            raise ValueError("Discount can't be less then 0 or more then 100")
+        return value
 
 
 class ArchiveEventDetailSchema(EventDetailBaseSchema):
@@ -157,3 +175,5 @@ class CreateEventSchema(BaseModel):
                 raise ValueError(
                     "Неверный формат даты. Ожидается 'YYYY-MM-DD HH:MM' или ISO 8601 ('YYYY-MM-DDTHH:MM:SS')"
                 )
+
+

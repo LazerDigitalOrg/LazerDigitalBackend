@@ -1,7 +1,7 @@
-from datetime import datetime
 from typing import List, Optional, Union
 
 from pydantic import BaseModel, field_validator
+
 
 
 class EquipmentSchema(BaseModel):
@@ -18,26 +18,25 @@ class EquipmentSchema(BaseModel):
         return value
 
 
+class EquipmentTitleSchema(BaseModel):
+    title: str
+
+
+class EventEquipmentCategorySchema(BaseModel):
+    category_title: str
+    equipments_catalog: List[EquipmentTitleSchema]
+
+
+class EventEquipmentCategoryResponse(BaseModel):
+    equipments_catalog: List[EventEquipmentCategorySchema]
+    reed:str
+
+
 class EquipmentCategorySchema(BaseModel):
     title: str
     equipment_slug: str
     photo_url: str
     price: Optional[int]
-
-
-
-class EquipmentAdminDetailSchema(BaseModel):
-    title: str
-
-
-class CategoryEquipmentAdminDetailSchema(BaseModel):
-    category_title: str
-    equipments: List[EquipmentAdminDetailSchema]
-
-
-class ConfirmEquipmentAdminDetailSchema(EquipmentAdminDetailSchema):
-    title: str
-    quantity: int
 
 
 # {"equipmnets": [

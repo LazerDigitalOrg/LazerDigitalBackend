@@ -87,7 +87,7 @@ class Event(Base):
     manager: Mapped["User"] = relationship(back_populates="managed_events", foreign_keys=[manager_id])
     lightning_designer_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     lightning_designer: Mapped["User"] = relationship(back_populates="lightning_events", foreign_keys=[lightning_designer_id])
-    equipments: Mapped[List["EventEquipment"]] = relationship()
+    equipments: Mapped[List["EventEquipment"]] = relationship(lazy="joined")
     equipment_count: Mapped[int] = mapped_column(Integer, nullable=True)
 
     @property

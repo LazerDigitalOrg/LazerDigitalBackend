@@ -15,10 +15,9 @@ from events.schemas import (
     ArchiveEventsResponse,
     ActiveEventDetailSchema,
     ArchiveEventDetailSchema,
-    AdminActiveEventResponse, ConfirmEventSchema,
+    AdminActiveEventResponse, ConfirmEventSchema
 
 )
-from equipments.schemas import CategoryEquipmentAdminDetailSchema, EquipmentAdminDetailSchema
 
 
 class EventService:
@@ -164,29 +163,20 @@ class EventService:
 
     async def get_admin_active_event(self, event_id):
         event = await self.event_repository.get_single_event_by_condition(Event.id == event_id)
+        if event == None :
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Event is not exists"
+            )
         event = event[0]
-        print(event.estimate)
+
 
         if event.status != EventStatusEnum.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Event is not active"
             )
-        categories = await self.category_repository.get_categories()
-        categories_result = []
-        for category in categories:
-            equipments = await self.equipment_repository.get_equipments_by_category(None, 0, category.category_slug)
-            equipments = [
-                EquipmentAdminDetailSchema(
-                    title=equipment.title,
-                )
-                for equipment in equipments
-            ]
-            category = CategoryEquipmentAdminDetailSchema(
-                category_title=category.title,
-                equipments=equipments
-            )
-            categories_result.append(category)
+
         equipments = [
             f"{event_equipment.quantity} X {event_equipment.equipment.title}"
             for event_equipment in event.equipments
@@ -213,7 +203,6 @@ class EventService:
             equipments=equipments,
             estimate=estimate,
             discount=discount,
-            equipment_catalog=categories_result
         )
 
     async def confirm_event(self, event: ConfirmEventSchema):
@@ -227,11 +216,12 @@ class EventService:
                 detail=f"Event does not exists"
             )
         existing_event = existing_event[0]
-        print(existing_event.id)
+        print(event.discount)
         price = 0
         for equipment in event.equipments:
-            title=equipment.title
-            quantity=equipment.quantity
+            print(equipment.title)
+            title = equipment.title
+            quantity = equipment.quantity
             existing_equipment: Equipment = await self.equipment_repository.get_single_equipment_by_condition(
                 Equipment.title == title,
                 with_for_update=True
@@ -241,7 +231,7 @@ class EventService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Equipment {title} does not exists"
                 )
-            if quantity <=0:
+            if quantity <= 0:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Quantity of {title} can't be less then 0"
@@ -258,7 +248,7 @@ class EventService:
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail=f"Quantity of this equipment - {equipment.title} is less than available : {existing_equipment.quantity + existing_event_equipment.quantity}"
                     )
-                existing_equipment.quantity =existing_event_equipment.quantity + existing_equipment.quantity- quantity
+                existing_equipment.quantity = existing_event_equipment.quantity + existing_equipment.quantity - quantity
                 existing_event_equipment.quantity = quantity
             else:
                 event_equipment = EventEquipment(
@@ -271,12 +261,12 @@ class EventService:
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail=f"Quantity of this equipment - {equipment.title} is less than available : {existing_equipment.quantity}"
                     )
-                existing_equipment.quantity-=quantity
+                existing_equipment.quantity -= quantity
                 self.session.add(event_equipment)
-            price+=existing_equipment.rental_price*quantity
+            price += existing_equipment.rental_price * quantity
             await self.session.commit()
 
-        existing_event.estimate = price * (1 - event.discount) / 100
+        existing_event.estimate = price * (1 - event.discount / 100)
         existing_event.discount = event.discount
 
         await self.session.commit()

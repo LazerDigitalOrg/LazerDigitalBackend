@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, RoleEnum
 from dependencies import get_async_session
 from auth.dependencies import get_current_user, get_admin_user
+from equipments.services import EquipmentService
 from events.services import EventService
 
 from events.schemas import (
@@ -42,7 +43,7 @@ async def get_all_events(
     return result
 
 
-@events_router.get("/get_active", response_model=ActiveEventsResponse)
+@events_router.get("/active", response_model=ActiveEventsResponse)
 async def get_active_events(
         user: Annotated[User, Depends(get_current_user)],
         session: AsyncSession = Depends(get_async_session),
@@ -52,7 +53,7 @@ async def get_active_events(
     return result
 
 
-@events_router.get("/get_archive", response_model=ArchiveEventsResponse)
+@events_router.get("/archive", response_model=ArchiveEventsResponse)
 async def get_active_events(
         user: Annotated[User, Depends(get_current_user)],
         session: AsyncSession = Depends(get_async_session),
@@ -62,7 +63,7 @@ async def get_active_events(
     return result
 
 
-@events_router.get("/get_active/{event_id}", response_model=ActiveEventDetailSchema)
+@events_router.get("/active/{event_id}", response_model=ActiveEventDetailSchema)
 async def get_single_active_event(
         event_id: int,
         user: Annotated[User, Depends(get_current_user)],
@@ -73,7 +74,7 @@ async def get_single_active_event(
     return result
 
 
-@events_router.get("/admin/get_active/{event_id}", response_model=AdminActiveEventResponse)
+@events_router.get("/admin/active/{event_id}", response_model=AdminActiveEventResponse)
 async def get_single_active_event(
         event_id: int,
         user: Annotated[User, Depends(get_admin_user)],
@@ -95,7 +96,7 @@ async def get_single_active_event(
     return result
 
 
-@events_router.get("/get_archive/{event_id}", response_model=ArchiveEventDetailSchema)
+@events_router.get("/archive/{event_id}", response_model=ArchiveEventDetailSchema)
 async def get_single_archive_event(
         event_id: int,
         user: Annotated[User, Depends(get_current_user)],
@@ -105,6 +106,8 @@ async def get_single_archive_event(
     result = await events_service.get_archive_event(event_id, user)
 
     return result
+
+
 
 
 @events_router.post("/add")
@@ -120,4 +123,4 @@ async def create_event(
         )
     event_session = EventService(session)
     result = await event_session.add_event(new_event, user.id)
-    return {"detail": "OK", "event_id": result.id}
+    return {"result": "OK", "event_id": result.id}

@@ -1,9 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, Any, Coroutine
 
 from database.models import Equipment
+from equipments.schemas import EquipmentTitleSchema, EventEquipmentCategorySchema
 from src.equipments.repositories import EquipmentRepository, CategoryRepository
 from src.equipments.schemas import EquipmentSchema, EquipmentResponse, CategoryResponse, EquipmentCategorySchema, \
-    CategorySchema
+    CategorySchema, EventEquipmentCategoryResponse
 
 
 class EquipmentService:
@@ -57,6 +58,23 @@ class EquipmentService:
                 price=equipment.rental_price
             )
         return None
+
+    async def get_event_equipments(self):
+        categories = await self.category_repository.get_categories()
+        categories_result = []
+        for category in categories:
+            equipments = await self.equipment_repository.get_equipments_by_category(None, 0, category.category_slug)
+            equipments = [
+                EquipmentTitleSchema(title=equipment.title)
+                for equipment in equipments
+            ]
+            category_schema = EventEquipmentCategorySchema(
+                category_title=category.title,
+                equipments_catalog=equipments
+            )
+            categories_result.append(category_schema)
+        result = {"equipments": categories_result}
+        return result
 
 
 class CategoryService:
