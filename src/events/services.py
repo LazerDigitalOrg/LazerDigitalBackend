@@ -96,7 +96,10 @@ class EventService:
             Event.customer_id == user_id,
             Event.id == event_id
         )
+        if( event == None):
+            return None
         event = event[0]
+
         if event.status != EventStatusEnum.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

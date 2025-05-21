@@ -25,6 +25,12 @@ async def generate_tokens(result: TokenSchema,
         key="refresh_token", value=result.refresh_token, secure=True, httponly=True, samesite='none',
         expires=refresh_token_expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
     )
+@auth_router.get("/check_refresh_token")
+async def register_user(
+        user: Annotated[User, Depends(get_current_user)],
+)->dict:
+    return {"result":"OK"}
+
 
 
 @auth_router.post("/register", response_model=UserRole)
