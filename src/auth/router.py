@@ -29,7 +29,7 @@ async def generate_tokens(result: TokenSchema,
 async def register_user(
         user: Annotated[User, Depends(get_current_user)],
 )->dict:
-    return {"result":"OK"}
+    return {"role":user.role}
 
 
 
