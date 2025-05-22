@@ -160,9 +160,7 @@ class CreateEventSchema(BaseModel):
             return value
         try:
             date = datetime.strptime(value, "%Y-%m-%d %H:%M")
-            print("no")
             if date.timestamp() < datetime.now(timezone.utc).timestamp():
-                print("yes")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Дата мероприятия не может быть меньше чем сегодняшний день"

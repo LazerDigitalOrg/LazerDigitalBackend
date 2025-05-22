@@ -108,8 +108,6 @@ async def get_single_archive_event(
     return result
 
 
-
-
 @events_router.post("/add")
 async def create_event(
         new_event: CreateEventSchema,

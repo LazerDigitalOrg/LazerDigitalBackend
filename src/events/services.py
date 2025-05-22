@@ -219,10 +219,8 @@ class EventService:
                 detail=f"Event does not exists"
             )
         existing_event = existing_event[0]
-        print(event.discount)
         price = 0
         for equipment in event.equipments:
-            print(equipment.title)
             title = equipment.title
             quantity = equipment.quantity
             existing_equipment: Equipment = await self.equipment_repository.get_single_equipment_by_condition(
@@ -267,7 +265,9 @@ class EventService:
                 existing_equipment.quantity -= quantity
                 self.session.add(event_equipment)
             price += existing_equipment.rental_price * quantity
-            await self.session.commit()
+            await self.session.flush()
+            await self.session.refresh(existing_equipment)
+            await self.session.refresh(existing_event)
 
         existing_event.estimate = price * (1 - event.discount / 100)
         existing_event.discount = event.discount

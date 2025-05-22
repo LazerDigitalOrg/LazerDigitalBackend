@@ -1,7 +1,7 @@
 from sqlalchemy import select, desc, asc, and_, update
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
-from database.models import Equipment, Category, EventEquipment
+from database.models import Equipment, Category, EventEquipment, Event
 
 
 class EquipmentRepository:
@@ -26,9 +26,12 @@ class EventEquipmentRepository:
         self.session = session
 
     async def get_event_equipment_by_condition(self, *predicate, with_for_update=False):
-        stmt = select(EventEquipment).where(*predicate)
+        stmt = (select(EventEquipment).options(
+                joinedload(EventEquipment.event),
+                joinedload(EventEquipment.equipment))
+                .where(*predicate))
         if with_for_update:
-            stmt = stmt.with_for_update()
+            stmt = stmt.with_for_update(of=EventEquipment)
         result = await self.session.execute(stmt)
         return result.scalars().one_or_none()
 

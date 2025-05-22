@@ -58,7 +58,7 @@ class EventRepository:
         stmt = (
             select(Event)
             .options(
-                selectinload(Event.equipments).joinedload(EventEquipment.equipment)
+                selectinload(Event.equipments).options(joinedload(EventEquipment.equipment))
                 , joinedload(Event.manager), joinedload(Event.lightning_designer)
 
             ).where(*predicate)

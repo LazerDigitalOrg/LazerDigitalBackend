@@ -1,3 +1,5 @@
+import uvicorn
+
 from fastapi import FastAPI
 from src.equipments.router import equipments_router
 from src.auth.router import auth_router
@@ -11,6 +13,8 @@ app.include_router(auth_router)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5500",
+    "http://127.0.0.1:5500",
+
 ]
 
 app.add_middleware(
@@ -18,11 +22,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "HEAD", "OPTIONS", "DELETE","PUT"],
+    allow_methods=["GET", "POST", "HEAD", "OPTIONS", "DELETE", "PUT"],
     allow_headers=["Access-Control-Allow-Headers", 'Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
 )
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8002,
+        reload=False
+    )
