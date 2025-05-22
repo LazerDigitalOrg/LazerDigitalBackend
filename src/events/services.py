@@ -60,7 +60,7 @@ class EventService:
             title=new_event.title,
             event_id=new_event.id,
             date=new_event.formatted_period,
-            estimate=new_event.estimate if new_event.estimate else 0
+            estimate=int(new_event.estimate) if new_event.estimate else 0
         )
 
     async def get_active_events(self, user_id):

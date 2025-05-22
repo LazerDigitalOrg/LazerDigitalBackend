@@ -25,7 +25,7 @@ class ActiveEventSchema(BaseModel):
     title: str
     event_id: int
     date: str
-    estimate: float | None
+    estimate: int | None
 
 
 class ArchiveEventSchema(BaseModel):
