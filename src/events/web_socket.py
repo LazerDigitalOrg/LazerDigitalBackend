@@ -12,7 +12,6 @@ web_socket_router = APIRouter(prefix="/ws/chat")
 
 class ConnectionManager:
     def __init__(self):
-        # Хранение активных соединений в виде {room_id: {user_id: WebSocket}}
         self.active_connections: dict[int, list[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket,  admin_id: int):
