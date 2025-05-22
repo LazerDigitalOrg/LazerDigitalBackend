@@ -52,10 +52,16 @@ class EventService:
 
         return AllEventsResponse(events=events, offset=offset, totalCount=len(events))
 
-    async def add_event(self, new_event: CreateEventSchema, user_id: int):
+    async def add_event(self, new_event: CreateEventSchema, user: User):
         manager = await self.user_repository.get_user_by_role(RoleEnum.MANAGER)
         lightning_designer = await self.user_repository.get_user_by_role(RoleEnum.LIGHTNING_DESIGNER)
-        return await self.event_repository.add(new_event, user_id, manager.id, lightning_designer.id)
+        new_event = await self.event_repository.add(new_event, user, manager.id, lightning_designer.id)
+        return ActiveEventSchema(
+            title=new_event.title,
+            event_id=new_event.id,
+            date=new_event.formatted_period,
+            estimate=new_event.estimate if new_event.estimate else 0
+        )
 
     async def get_active_events(self, user_id):
         events = await self.event_repository.get_events_by_condition(
@@ -96,7 +102,8 @@ class EventService:
             Event.customer_id == user_id,
             Event.id == event_id
         )
-        if( event == None):
+        print(event)
+        if not  event:
             return None
         event = event[0]
 
@@ -166,13 +173,12 @@ class EventService:
 
     async def get_admin_active_event(self, event_id):
         event = await self.event_repository.get_single_event_by_condition(Event.id == event_id)
-        if event == None :
+        if event == None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Event is not exists"
             )
         event = event[0]
-
 
         if event.status != EventStatusEnum.ACTIVE:
             raise HTTPException(
@@ -184,9 +190,9 @@ class EventService:
             f"{event_equipment.quantity} X {event_equipment.equipment.title}"
             for event_equipment in event.equipments
         ] if event.equipments else []
-
         discount = event.discount if event.discount else 0
         estimate = event.estimate if event.estimate else 0
+        print(discount)
 
         return AdminActiveEventResponse(
             event_date=event.event_date,
@@ -220,6 +226,20 @@ class EventService:
             )
         existing_event = existing_event[0]
         price = 0
+        print(event.manager_username)
+        manager : User=await self.user_repository.get_user_by_username(username=event.manager_username)
+
+        if not manager:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Manager does not exists"
+            )
+        if manager.phone_number!=event.manager_phone_number:
+            if not manager:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Manager phone number invalid"
+                )
         for equipment in event.equipments:
             title = equipment.title
             quantity = equipment.quantity
@@ -271,7 +291,7 @@ class EventService:
 
         existing_event.estimate = price * (1 - event.discount / 100)
         existing_event.discount = event.discount
-
+        existing_event.manager_id=manager.id
         await self.session.commit()
 
         return {"result": "OK"}

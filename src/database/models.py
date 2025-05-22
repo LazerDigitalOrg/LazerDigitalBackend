@@ -103,7 +103,7 @@ class Role(Base):
 
 class User(Base):
     __tablename__ = "users"
-    username: Mapped[str] = mapped_column(String)
+    username: Mapped[str] = mapped_column(String,unique=True, nullable=False)
     phone_number: Mapped[str] = mapped_column(String(12))
     avatar_url: Mapped[str] = mapped_column(String, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String)

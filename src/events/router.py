@@ -1,6 +1,7 @@
 from typing import Annotated, Union
 
 from fastapi import APIRouter
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.exceptions import HTTPException
 from fastapi import status
@@ -9,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, RoleEnum
 from dependencies import get_async_session
 from auth.dependencies import get_current_user, get_admin_user
-from equipments.services import EquipmentService
 from events.services import EventService
 
 from events.schemas import (
@@ -22,6 +22,7 @@ from events.schemas import (
     AdminActiveEventResponse,
     ConfirmEventSchema
 )
+from events.web_socket import manager
 
 events_router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -63,14 +64,15 @@ async def get_active_events(
     return result
 
 
-@events_router.get("/active/{event_id}", response_model=ActiveEventDetailSchema)
+@events_router.get("/active/{event_id}", response_model=ActiveEventDetailSchema | None)
 async def get_single_active_event(
         event_id: int,
         user: Annotated[User, Depends(get_current_user)],
         session: AsyncSession = Depends(get_async_session),
-) -> ActiveEventDetailSchema:
+) -> ActiveEventDetailSchema | None:
     events_service = EventService(session)
     result = await events_service.get_active_event(user_id=user.id, event_id=event_id)
+
     return result
 
 
@@ -120,5 +122,28 @@ async def create_event(
             detail="User not found"
         )
     event_session = EventService(session)
-    result = await event_session.add_event(new_event, user.id)
-    return {"result": "OK", "event_id": result.id}
+    result = await event_session.add_event(new_event, user)
+
+    manager.send_personal_message(
+        jsonable_encoder(result),
+        admin_id=user.id
+    )
+
+    return {"result": "OK", "event_id": result.event_id}
+
+
+@events_router.get("/all", response_model=AllEventsResponse)
+async def get_all_events(
+        user: Annotated[User, Depends(get_admin_user)],
+        session: AsyncSession = Depends(get_async_session),
+        limit: int | None = 10,
+        page: int | None = 1,
+) -> AllEventsResponse:
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User should be admin"
+        )
+    events_service = EventService(session)
+    result = await events_service.get_events(limit=limit, page=page)
+    return result

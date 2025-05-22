@@ -86,11 +86,13 @@ class ConfirmEventEquipmentsSchema(BaseModel):
 
 class ConfirmEventSchema(BaseModel):
     event_id: int
-    discount: float
+    discount: int
+    manager_username: str
+    manager_phone_number: str
     equipments: List[ConfirmEventEquipmentsSchema]
 
     @field_validator("discount")
-    def check_discount(cls, value: float) -> float:
+    def check_discount(cls, value: int) -> int:
         if (value < 0 or value >= 100):
             raise ValueError("Discount can't be less then 0 or more then 100")
         return value
@@ -105,6 +107,7 @@ class ArchiveEventDetailSchema(EventDetailBaseSchema):
     equipment: List[str]
     equipment_count: int
     total_sum: float
+
 
 
 class ActiveEventDetailSchema(EventDetailBaseSchema):

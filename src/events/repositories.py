@@ -18,7 +18,7 @@ class EventRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def add(self, new_event: CreateEventSchema, user_id, manager_id, lightning_designer_id):
+    async def add(self, new_event: CreateEventSchema, user, manager_id, lightning_designer_id):
         event = Event(
             event_date=new_event.event_date,
             event_end_date=new_event.event_end_date,
@@ -35,7 +35,7 @@ class EventRepository:
             min_install_time=new_event.min_install_time,
             total_power=new_event.total_power,
             has_downtime=new_event.has_downtime,
-            customer_id=user_id,
+            customer_id=user.id,
             manager_id=manager_id,
             lightning_designer_id=lightning_designer_id
         )
@@ -43,6 +43,8 @@ class EventRepository:
 
         await self.session.commit()
         await self.session.refresh(event)
+        await self.session.refresh(user)
+
         return event
 
     async def get_events_by_condition(self, *predicate):

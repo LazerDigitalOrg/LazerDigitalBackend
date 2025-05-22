@@ -1034,16 +1034,16 @@ async def generate_date():
             await session.flush()
 
             users = [
-                User(username="Иван",
+                User(username="Покупатель",
                      hashed_password=get_password_hash("user"),
-                     phone_number="qwdqd",
+                     phone_number="+78007777777",
                      avatar_url="qwdqwd",
                      email="user@user.com",
                      role=RoleEnum.USER,
                      person_position='dw'),
-                User(username="admin",
+                User(username="Иван Иванович",
                      hashed_password=get_password_hash("admin"),
-                     phone_number="qwdqd",
+                     phone_number="+78005553535",
                      avatar_url="qwdqwd",
                      email="admin@admin.com",
                      role=RoleEnum.ADMIN,

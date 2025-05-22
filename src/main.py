@@ -5,11 +5,12 @@ from src.equipments.router import equipments_router
 from src.auth.router import auth_router
 from src.events.router import events_router
 from fastapi.middleware.cors import CORSMiddleware
-
+from src.events.web_socket import web_socket_router
 app = FastAPI()
 app.include_router(equipments_router)
 app.include_router(events_router)
 app.include_router(auth_router)
+app.include_router(web_socket_router)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5500",
