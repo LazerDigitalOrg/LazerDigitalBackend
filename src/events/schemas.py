@@ -33,7 +33,7 @@ class ArchiveEventSchema(BaseModel):
     event_id: int
     date: str
     equipment_count: int | None
-    estimate: float | None
+    estimate: int | None
 
 
 class EventDetailBaseSchema(BaseModel):
@@ -76,7 +76,7 @@ class AdminActiveEventResponse(EventDetailBaseSchema):
     min_install_time: int
     total_power: int | None
     has_downtime: bool
-    estimate: float
+    estimate: int
     discount: float
     equipments: List[str]
 
@@ -128,7 +128,7 @@ class ActiveEventDetailSchema(EventDetailBaseSchema):
     manager_name: str
     manager_phone_number: str
     equipment: List[str]
-    estimate: float | None
+    estimate: int | None
     estimate_xlsx: bytes | None
     discount: float | None
 
