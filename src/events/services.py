@@ -104,7 +104,6 @@ class EventService:
             Event.customer_id == user_id,
             Event.id == event_id
         )
-        print(event)
         if not  event:
             return None
         event = event[0]
@@ -194,7 +193,6 @@ class EventService:
         ] if event.equipments else []
         discount = event.discount if event.discount else 0
         estimate = event.estimate if event.estimate else 0
-        print(discount)
 
         return AdminActiveEventResponse(
             event_date=event.event_date,
@@ -228,7 +226,6 @@ class EventService:
             )
         existing_event = existing_event[0]
         price = 0
-        print(event.manager_username)
         manager : User=await self.user_repository.get_user_by_username(username=event.manager_username)
 
         if not manager:

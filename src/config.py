@@ -6,6 +6,18 @@ from pydantic_settings import BaseSettings,SettingsConfigDict
 load_dotenv()
 BASE_DIR = Path(__file__).parent
 
+
+class RedisSettings(BaseSettings):
+    host: str = "localhost"
+    port: int = 6379
+    db: int = 0
+
+    cache_expire_seconds: int = 3000
+
+    @property
+    def url(self):
+        return f"redis://{self.host}:{self.port}/{self.db}"
+
 class DbSettings(BaseSettings):
     url: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/lazerdigital"
 
@@ -24,6 +36,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore"
     )
+    redis: RedisSettings = RedisSettings()
 
     api_v1_prefix: str = "/api/v1"
 

@@ -16,7 +16,6 @@ REFRESH_TOKEN_TYPE = "refresh"
 
 
 async def get_access_token(request: Request):
-    print("QD")
     access_token = request.cookies.get("access_token")
     if not access_token:
         raise HTTPException(
@@ -51,7 +50,6 @@ async def get_current_user(
             detail="Invalid access token"
         )
     user = await auth_service.get_user(email)
-    print(user)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -98,7 +96,6 @@ async def get_admin_user(
 ) -> User | None:
     if user.role == "admin":
         return user
-    print("hello")
     if not user:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

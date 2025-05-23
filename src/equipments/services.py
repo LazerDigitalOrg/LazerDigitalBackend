@@ -74,6 +74,7 @@ class EquipmentService:
             )
             categories_result.append(category_schema)
         result = {"equipments": categories_result}
+
         return result
 
 
