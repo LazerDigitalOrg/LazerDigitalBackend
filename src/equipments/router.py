@@ -25,7 +25,7 @@ async def get_event_equipments(
     result = await equipment_service.get_event_equipments()
     await redis_client.set(
         "equipments-by-category",
-            json.dumps(jsonable_encoder(result)),
+        json.dumps(jsonable_encoder(result)),
         ex=settings.redis.cache_expire_seconds)
 
     return result
@@ -35,6 +35,7 @@ async def get_event_equipments(
                        response_model=Optional[Union[EquipmentResponse, EquipmentSchema]])
 async def get_equipment_or_equipments(
         session: Annotated[AsyncSession, Depends(get_async_session)],
+        redis_client: Annotated[Redis, Depends(get_redis)],
         category_slug,
         path: str,
         limit: int | None = 10,
@@ -45,34 +46,76 @@ async def get_equipment_or_equipments(
 
     path = path.split("/")
     if len(path) == 2:
-        return await equipment_service.get_single_equipment(path[1], category_slug + "/" + path[0])
+        key = f"{path[1]+"/"+ category_slug + "/" + path[0]}"
+        if cached := await redis_client.get(key):
+            return json.loads(cached)
+        result= await equipment_service.get_single_equipment(path[1], category_slug + "/" + path[0])
+        await redis_client.set(
+            key,
+            json.dumps(jsonable_encoder(result)),
+            ex=settings.redis.cache_expire_seconds)
+        return result
     if len(path) == 1:
         if await category_service.is_category(category_slug + "/" + path[0]):
-
+            key = category_slug + "/" + path[0]
+            if cached := await redis_client.get(key):
+                return json.loads(cached)
             equipments = await equipment_service.get_equipments_by_category(limit, page, category_slug + "/" + path[0])
+            await redis_client.set(
+                key,
+                json.dumps(jsonable_encoder(equipments)),
+                ex=settings.redis.cache_expire_seconds)
             return equipments
         else:
-            return await equipment_service.get_single_equipment(path[0], category_slug)
-
+            key = path[0]+"/"+ category_slug
+            if cached := await redis_client.get(key):
+                return json.loads(cached)
+            result= await equipment_service.get_single_equipment(path[0], category_slug)
+            await redis_client.set(
+                key,
+                json.dumps(jsonable_encoder(result)),
+                ex=settings.redis.cache_expire_seconds)
+            return result
 
 @equipments_router.get("/{category_slug}", response_model=Union[EquipmentResponse, CategoryResponse])
 async def get_equipments_or_categories(
         session: Annotated[AsyncSession, Depends(get_async_session)],
+        redis_client: Annotated[Redis, Depends(get_redis)],
         category_slug: str,
         limit: int | None = 10,
         page: int | None = 1,
+
 ):
+    print("Wd")
+    if cached := await redis_client.get(f"category_slug/{category_slug}"):
+        return json.loads(cached)
     category_service = CategoryService(session)
     equipment_service = EquipmentService(session)
     result = await category_service.get_child_categories(category_slug)
     if result is None:
         return await equipment_service.get_equipments_by_category(limit, page, category_slug)
+    await redis_client.set(
+        f"category_slug/{category_slug}",
+        json.dumps(jsonable_encoder(result)),
+        ex=settings.redis.cache_expire_seconds)
+
     return result
 
 
 @equipments_router.get("", response_model=CategoryResponse)
 async def get_categories(
         session: Annotated[AsyncSession, Depends(get_async_session)],
+        redis_client: Annotated[Redis, Depends(get_redis)]
+
 ):
+    if cached := await redis_client.get("store"):
+        return json.loads(cached)
     category_service = CategoryService(session)
-    return await category_service.get_categories()
+
+    result = await category_service.get_categories()
+    await redis_client.set(
+        "store",
+        json.dumps(jsonable_encoder(result)),
+        ex=settings.redis.cache_expire_seconds)
+
+    return result

@@ -165,7 +165,7 @@ class EventEquipment(Base):
     event_id: Mapped[int] = mapped_column(ForeignKey("events.id"))
     quantity: Mapped[int] = mapped_column(Integer)
     equipment: Mapped["Equipment"] = relationship()
-    event: Mapped["Event"] = relationship()
+    event: Mapped["Event"] = relationship(back_populates="equipments")
 
 
 

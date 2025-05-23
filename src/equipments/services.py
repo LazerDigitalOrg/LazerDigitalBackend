@@ -1,5 +1,8 @@
 from typing import List, Optional, Any, Coroutine
 
+from fastapi import HTTPException
+from starlette import status
+
 from database.models import Equipment
 from equipments.schemas import EquipmentTitleSchema, EventEquipmentCategorySchema
 from src.equipments.repositories import EquipmentRepository, CategoryRepository
@@ -23,7 +26,11 @@ class EquipmentService:
             limit, offset, category
         )
         category = await self.category_repository.get_single_category(category_slug=category)
-
+        if not category:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Category does not exists"
+            )
         equipments = [
             EquipmentCategorySchema(
                 title=equipment.title,

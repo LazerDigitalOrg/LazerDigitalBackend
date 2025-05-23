@@ -27,8 +27,10 @@ class ConnectionManager:
             del self.active_connections[admin_id]
 
     async def send_personal_message(self, message: str, admin_id):
+        print("Отправил")
 
         if admin_id in self.active_connections:
+            print("yes")
             for websocket in self.active_connections[admin_id]:
                 try:
                     await websocket.send_json(message)

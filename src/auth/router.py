@@ -26,7 +26,7 @@ async def generate_tokens(result: TokenSchema,
         expires=refresh_token_expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
     )
 @auth_router.get("/check_refresh_token")
-async def register_user(
+async def check_token(
         user: Annotated[User, Depends(get_current_user)],
 )->dict:
     return {"role":user.role}
@@ -68,7 +68,7 @@ async def logout_user(response: Response):
 
 
 @auth_router.get("/users/me/", response_model=UserSchema)
-async def read_users_me(
+async def get_user_info(
         current_user: Annotated[User, Depends(get_current_user)],
 ):
     return UserSchema(
@@ -78,9 +78,3 @@ async def read_users_me(
         role=current_user.role
     )
 
-
-@auth_router.get("/users/events/")
-async def read_users_me(
-        current_user: Annotated[User, Depends(get_current_user)],
-):
-    return []

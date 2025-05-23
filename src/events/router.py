@@ -55,7 +55,7 @@ async def get_active_events(
 
 
 @events_router.get("/archive", response_model=ArchiveEventsResponse)
-async def get_active_events(
+async def get_archive_events(
         user: Annotated[User, Depends(get_current_user)],
         session: AsyncSession = Depends(get_async_session),
 ) -> AllEventsResponse:
@@ -77,7 +77,7 @@ async def get_single_active_event(
 
 
 @events_router.get("/admin/active/{event_id}", response_model=AdminActiveEventResponse)
-async def get_single_active_event(
+async def get_single_admin_active_event(
         event_id: int,
         user: Annotated[User, Depends(get_admin_user)],
         session: AsyncSession = Depends(get_async_session),
@@ -88,7 +88,7 @@ async def get_single_active_event(
 
 
 @events_router.post("/admin/confirm_event/{event_id}")
-async def get_single_active_event(
+async def confirm_event(
         event: ConfirmEventSchema,
         user: Annotated[User, Depends(get_admin_user)],
         session: AsyncSession = Depends(get_async_session),
@@ -123,7 +123,6 @@ async def create_event(
         )
     event_session = EventService(session)
     result = await event_session.add_event(new_event, user)
-
     await manager.send_personal_message(
         jsonable_encoder(result.get("event")),
         admin_id=result.get("manager_id")

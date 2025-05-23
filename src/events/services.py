@@ -56,13 +56,14 @@ class EventService:
     async def add_event(self, new_event: CreateEventSchema, user: User):
         manager = await self.user_repository.get_user_by_role(RoleEnum.ADMIN)
         lightning_designer = await self.user_repository.get_user_by_role(RoleEnum.LIGHTNING_DESIGNER)
-        new_event = await self.event_repository.add(new_event, user, manager.id, lightning_designer.id)
+        new_event = await self.event_repository.add(new_event, user, manager, lightning_designer)
         result= ActiveEventSchema(
             title=new_event.title,
             event_id=new_event.id,
             date=new_event.formatted_period,
             estimate=int(new_event.estimate) if new_event.estimate else 0,
         )
+
         return {"event":result,"manager_id":manager.id}
 
     async def get_active_events(self, user_id):

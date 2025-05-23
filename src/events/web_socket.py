@@ -14,6 +14,7 @@ async def websocket_endpoint(
         websocket: WebSocket,
         user: Annotated[User, Depends(get_admin_user_from_websocket)]
 ):
+    print(user.id)
     await manager.connect(websocket, admin_id=user.id)
     try:
         while True:
