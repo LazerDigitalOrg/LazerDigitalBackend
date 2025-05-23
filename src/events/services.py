@@ -78,7 +78,7 @@ class EventService:
                 title=event.title,
                 event_id=event.id,
                 date=event.formatted_period,
-                estimate=event.estimate if event.estimate else 0
+                estimate=int(event.estimate) if event.estimate else 0
             )
             for event in events
         ]
