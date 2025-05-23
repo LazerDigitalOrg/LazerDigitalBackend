@@ -12,7 +12,7 @@ class UserSchema(BaseModel):
     username: str
     email: EmailStr
     phone_number: str
-    role: bool | None = True
+    role: str
 
 
 class UserRole(BaseModel):

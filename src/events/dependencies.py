@@ -1,47 +1,55 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import HTTPException, Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from starlette.requests import Request
-from starlette.responses import Response
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from auth.services import AuthService
 from database.models import User
 from dependencies import get_async_session
 
-ACCESS_TOKEN_TYPE = "access"
-REFRESH_TOKEN_TYPE = "refresh"
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: dict[int, list[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, admin_id: int):
+
+        await websocket.accept()
+        if admin_id not in self.active_connections:
+            self.active_connections[admin_id] = []
+        self.active_connections[admin_id].append(websocket)
+
+    def disconnect(self, admin_id: int):
+        if admin_id in self.active_connections:
+            del self.active_connections[admin_id]
+
+    async def send_personal_message(self, message: str, admin_id):
+
+        if admin_id in self.active_connections:
+            for websocket in self.active_connections[admin_id]:
+                try:
+                    await websocket.send_json(message)
+                except WebSocketDisconnect:
+                    self.disconnect(admin_id)
 
 
-async def get_access_token(request: Request):
-    print("QD")
-    access_token = request.cookies.get("access_token")
+manager = ConnectionManager()
+
+
+async def get_admin_user_from_websocket(
+        websocket: WebSocket,
+        session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> User:
+    access_token = websocket.cookies.get("access_token")
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Access token is missing"
         )
-    return access_token
-
-
-async def get_refresh_token(request: Request):
-    refresh_token = request.cookies.get("refresh_token")
-    if not refresh_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token is missing"
-        )
-    return refresh_token
-
-
-async def get_current_user(
-        access_token: Annotated[str, Depends(get_access_token)],
-        refresh_token: Annotated[str, Depends(get_refresh_token)],
-        session: Annotated[AsyncSession, Depends(get_async_session)],
-        response: Response
-) -> User | None:
+    refresh_token = websocket.cookies.get("refresh_token")
     auth_service = AuthService(session)
     payload = auth_service.token_manager.decode_jwt(access_token)
     email = payload.get("sub")
@@ -51,7 +59,6 @@ async def get_current_user(
             detail="Invalid access token"
         )
     user = await auth_service.get_user(email)
-    print(user)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -82,27 +89,4 @@ async def get_current_user(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token. Please login again"
             )
-        access_token = auth_service.token_manager.create_token({"sub": email}, ACCESS_TOKEN_TYPE)
-        access_token_expires = datetime.now(timezone.utc) + timedelta(days=30)
-        response.set_cookie(
-            key="access_token", value=access_token, secure=True, httponly=True, samesite='none',
-            expires=access_token_expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
-        )
-
     return user
-
-
-
-async def get_admin_user(
-        user: Annotated[User, Depends(get_current_user)],
-) -> User | None:
-    if user.role == "admin":
-        return user
-    print("hello")
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User should be admin"
-        )
-
-    return None

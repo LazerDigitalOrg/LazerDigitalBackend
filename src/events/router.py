@@ -22,7 +22,7 @@ from events.schemas import (
     AdminActiveEventResponse,
     ConfirmEventSchema
 )
-from events.web_socket import manager
+from events.dependencies import manager
 
 events_router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -124,12 +124,12 @@ async def create_event(
     event_session = EventService(session)
     result = await event_session.add_event(new_event, user)
 
-    manager.send_personal_message(
-        jsonable_encoder(result),
-        admin_id=user.id
+    await manager.send_personal_message(
+        jsonable_encoder(result.get("event")),
+        admin_id=result.get("manager_id")
     )
 
-    return {"result": "OK", "event_id": result.event_id}
+    return {"result": "OK", "event_id": result.get("event").event_id}
 
 
 @events_router.get("/all", response_model=AllEventsResponse)

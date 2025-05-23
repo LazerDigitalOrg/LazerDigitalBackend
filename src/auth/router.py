@@ -74,7 +74,8 @@ async def read_users_me(
     return UserSchema(
         email=current_user.email,
         phone_number=current_user.phone_number,
-        username=current_user.username
+        username=current_user.username,
+        role=current_user.role
     )
 
 

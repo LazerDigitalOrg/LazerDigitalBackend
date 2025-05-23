@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import events.dependencies
 from auth.repositories import UserRepository
 from database.models import EventStatusEnum, Event, RoleEnum, User, Equipment, EventEquipment
 from equipments.repositories import EquipmentRepository, CategoryRepository, EventEquipmentRepository
@@ -53,15 +54,16 @@ class EventService:
         return AllEventsResponse(events=events, offset=offset, totalCount=len(events))
 
     async def add_event(self, new_event: CreateEventSchema, user: User):
-        manager = await self.user_repository.get_user_by_role(RoleEnum.MANAGER)
+        manager = await self.user_repository.get_user_by_role(RoleEnum.ADMIN)
         lightning_designer = await self.user_repository.get_user_by_role(RoleEnum.LIGHTNING_DESIGNER)
         new_event = await self.event_repository.add(new_event, user, manager.id, lightning_designer.id)
-        return ActiveEventSchema(
+        result= ActiveEventSchema(
             title=new_event.title,
             event_id=new_event.id,
             date=new_event.formatted_period,
-            estimate=int(new_event.estimate) if new_event.estimate else 0
+            estimate=int(new_event.estimate) if new_event.estimate else 0,
         )
+        return {"event":result,"manager_id":manager.id}
 
     async def get_active_events(self, user_id):
         events = await self.event_repository.get_events_by_condition(
@@ -131,8 +133,8 @@ class EventService:
             min_install_time=event.min_install_time,
             total_power=event.total_power,
             has_downtime=event.has_downtime,
-            manager_name=event.manager.username,
-            manager_phone_number=event.manager.phone_number,
+            manager_name=events.dependencies.manager.username,
+            manager_phone_number=events.dependencies.manager.phone_number,
             equipment=equipments,
             estimate=event.estimate if event.estimate else 0,
             estimate_xlsx=event.estimate_xlsx,
