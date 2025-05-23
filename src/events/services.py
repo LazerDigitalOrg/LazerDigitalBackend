@@ -57,11 +57,12 @@ class EventService:
         manager = await self.user_repository.get_user_by_role(RoleEnum.ADMIN)
         lightning_designer = await self.user_repository.get_user_by_role(RoleEnum.LIGHTNING_DESIGNER)
         new_event = await self.event_repository.add(new_event, user, manager, lightning_designer)
-        result= ActiveEventSchema(
+
+        result= AllEventsSchema(
             title=new_event.title,
             event_id=new_event.id,
             date=new_event.formatted_period,
-            estimate=int(new_event.estimate) if new_event.estimate else 0,
+            status=new_event.status
         )
 
         return {"event":result,"manager_id":manager.id}
