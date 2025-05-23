@@ -78,7 +78,7 @@ class Event(Base):
     min_install_time: Mapped[int] = mapped_column(Integer)
     total_power: Mapped[int] = mapped_column(Integer, nullable=True)
     has_downtime: Mapped[bool] = mapped_column(Boolean)
-    estimate: Mapped[float] = mapped_column(Float, nullable=True)
+    estimate: Mapped[int] = mapped_column(Integer, nullable=True)
     discount: Mapped[float] = mapped_column(Float, nullable=True)
     total_sum:Mapped[float] = mapped_column(Float, nullable=True)
     customer_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
